@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
-import '../widgets/app_card.dart';
 import '../widgets/chess_board.dart';
 import '../widgets/interstitial_ad_manager.dart';
 
@@ -33,11 +33,13 @@ class _GameViewState extends State<_GameView> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _interstitial.load();
   }
 
   @override
   void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _interstitial.dispose();
     super.dispose();
   }
@@ -52,108 +54,28 @@ class _GameViewState extends State<_GameView> {
   @override
   Widget build(BuildContext context) {
     final game = context.watch<GameProvider>();
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Game'),
-        actions: [
-          IconButton(
-            tooltip: 'New game',
-            onPressed: game.thinking ? null : _newGame,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-              children: [
-                AppCard(
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20,
-                        child: Icon(
-                          game.thinking
-                              ? Icons.psychology
-                              : Icons.person_outline,
-                          size: 21,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          game.status,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      if (game.thinking)
-                        const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                    ],
-                  ),
+
+    return PopScope(
+      canPop: !game.thinking,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          top: false,
+          bottom: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final boardSize = constraints.maxWidth < constraints.maxHeight
+                  ? constraints.maxWidth
+                  : constraints.maxHeight;
+
+              return Center(
+                child: SizedBox(
+                  width: boardSize,
+                  height: boardSize,
+                  child: const ChessBoard(),
                 ),
-                const SizedBox(height: 12),
-                const ChessBoard(),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: game.thinking ? null : game.undo,
-                        icon: const Icon(Icons.undo),
-                        label: const Text('Undo'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: game.thinking ? null : _newGame,
-                        icon: const Icon(Icons.add),
-                        label: const Text('New Game'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Moves',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      if (game.history.isEmpty)
-                        const Text('No moves yet.')
-                      else
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 5,
-                          children: game.history
-                              .map(
-                                (m) => Chip(
-                                  label: Text(
-                                    '${m.number}. ${m.san}',
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
