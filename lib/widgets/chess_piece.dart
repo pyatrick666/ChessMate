@@ -19,7 +19,7 @@ class ChessPieceWidget extends StatelessWidget {
         style: TextStyle(
           fontSize: 36,
           height: 1,
-          color: piece.color == Color.WHITE ? Colors.white : const Color(0xFF1A1A1A),
+          color: piece.color == chess.Color.WHITE ? Colors.white : const Color(0xFF1A1A1A),
           shadows: const [Shadow(offset: Offset(1, 2), blurRadius: 2, color: Colors.black54)],
         ),
       ),
