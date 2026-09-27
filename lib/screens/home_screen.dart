@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../models/game_settings.dart';
@@ -221,6 +222,46 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 22),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.coffee_outlined,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Support the Developer',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Enjoying ChessMate? You can support future updates with eSewa or Khalti.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: () => _showSupportDialog(context),
+                          icon: const Icon(Icons.favorite_outline),
+                          label: const Text('Support via eSewa / Khalti'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
                 const Center(child: AdBanner()),
               ],
             ),
@@ -229,6 +270,63 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+  void _showSupportDialog(BuildContext context) {
+    const walletNumber = '+977 9866805775';
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.coffee_outlined),
+            SizedBox(width: 10),
+            Text('Support the Developer'),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Thank you for supporting ChessMate!',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'You can send a voluntary donation using either eSewa or Khalti.',
+            ),
+            SizedBox(height: 16),
+            Text('eSewa / Khalti wallet number'),
+            SizedBox(height: 4),
+            SelectableText(
+              walletNumber,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await Clipboard.setData(
+                const ClipboardData(text: walletNumber),
+              );
+              if (dialogContext.mounted) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('Wallet number copied.')),
+                );
+              }
+            },
+            child: const Text('Copy Number'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 class _DifficultyCard extends StatelessWidget {
