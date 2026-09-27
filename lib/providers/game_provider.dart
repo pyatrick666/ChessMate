@@ -28,19 +28,19 @@ class GameProvider extends ChangeNotifier {
   bool get thinking => _thinking;
   bool get isGameOver => _game.game_over;
   bool get isHumanTurn =>
-      settings.settings.mode == GameMode.humanVsHuman || _game.turn == WHITE;
+      settings.settings.mode == GameMode.humanVsHuman || _game.turn == Color.WHITE;
 
   String get status {
     if (_game.in_checkmate) {
-      return _game.turn == WHITE ? 'Checkmate — Black wins' : 'Checkmate — White wins';
+      return _game.turn == Color.WHITE ? 'Checkmate — Black wins' : 'Checkmate — White wins';
     }
     if (_game.in_stalemate) return 'Draw — stalemate';
     if (_game.insufficient_material) return 'Draw — insufficient material';
     if (_game.in_threefold_repetition) return 'Draw — repetition';
     if (_game.in_draw) return 'Draw';
     if (_thinking) return 'Computer is thinking…';
-    if (_game.in_check) return '${_game.turn == WHITE ? 'White' : 'Black'} is in check';
-    return '${_game.turn == WHITE ? 'White' : 'Black'} to move';
+    if (_game.in_check) return '${_game.turn == Color.WHITE ? 'White' : 'Black'} is in check';
+    return '${_game.turn == Color.WHITE ? 'White' : 'Black'} to move';
   }
 
   void newGame() {
@@ -94,7 +94,9 @@ class GameProvider extends ChangeNotifier {
     if (_thinking || _game.game_over) return;
     final from = move.fromAlgebraic;
     final to = move.toAlgebraic;
-    final san = _game.move(move) ? _game.san_moves().last : '';
+    final success = _game.move(move);
+    final sanMoves = _game.san_moves();
+    final san = success && sanMoves.isNotEmpty ? (sanMoves.last ?? '') : '';
     if (san.isEmpty) return;
     _moveCounter++;
     _history.add(MoveRecord(number: _moveCounter, san: san, from: from, to: to));
@@ -102,7 +104,7 @@ class GameProvider extends ChangeNotifier {
     _legalTargets = {};
     notifyListeners();
 
-    if (!_game.game_over && settings.settings.mode == GameMode.humanVsAi && _game.turn == BLACK) {
+    if (!_game.game_over && settings.settings.mode == GameMode.humanVsAi && _game.turn == Color.BLACK) {
       unawaited(_makeAiMove());
     }
   }
@@ -126,7 +128,7 @@ class GameProvider extends ChangeNotifier {
         _moveCounter++;
         _history.add(MoveRecord(
           number: _moveCounter,
-          san: _game.san_moves().last,
+          san: (_game.san_moves().last ?? ''),
           from: from,
           to: to,
         ));
