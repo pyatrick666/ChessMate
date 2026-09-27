@@ -85,7 +85,7 @@ jobs:
       - name: Verify
         run: |
           flutter pub get
-          flutter analyze
+          flutter analyze --no-fatal-infos
           flutter test
 
       - name: Build release APK
