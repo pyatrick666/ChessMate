@@ -1,10 +1,10 @@
-import 'package:chess/chess.dart';
+import 'package:chess/chess.dart' as chess;
 import 'package:flutter/material.dart';
 
 class ChessPieceWidget extends StatelessWidget {
   const ChessPieceWidget({super.key, required this.piece});
 
-  final Piece piece;
+  final chess.Piece piece;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class ChessPieceWidget extends StatelessWidget {
       'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
       'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔',
     };
-    final symbol = piece.color == Color.WHITE ? piece.type.toUpperCase() : piece.type.toLowerCase();
+    final symbol = piece.color == chess.Color.WHITE ? piece.type.toUpperCase() : piece.type.toLowerCase();
     return Center(
       child: Text(
         glyphs[symbol] ?? '?',
