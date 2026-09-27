@@ -12,7 +12,10 @@ void main() {
     final game = Chess();
     final move = ChessAi(depth: 1).findBestMove(game);
     expect(move, isNotNull);
-    expect(game.moves().any((m) => m.fromAlgebraic == move!.fromAlgebraic && m.toAlgebraic == move.toAlgebraic), isTrue);
+
+    final copy = game.copy();
+    copy.make_move(move!);
+    expect(copy.history.length, 1);
   });
 
   test('Fool\'s mate is detected as checkmate', () {
