@@ -34,6 +34,9 @@ jobs:
         with:
           gradle-version: '8.14'
 
+      - name: Create Android local.properties
+        run: echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+
       - name: Generate Gradle wrapper
         working-directory: android
         run: gradle wrapper --gradle-version 8.14 --distribution-type bin
