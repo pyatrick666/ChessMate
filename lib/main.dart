@@ -5,18 +5,47 @@ import 'package:provider/provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
+import 'widgets/app_open_ad_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Google Mobile Ads before requesting any ads.
   await MobileAds.instance.initialize();
 
   runApp(const ChessMateApp());
 }
 
-class ChessMateApp extends StatelessWidget {
+class ChessMateApp extends StatefulWidget {
   const ChessMateApp({super.key});
+
+  @override
+  State<ChessMateApp> createState() => _ChessMateAppState();
+}
+
+class _ChessMateAppState extends State<ChessMateApp>
+    with WidgetsBindingObserver {
+  final AppOpenAdManager _appOpenAdManager = AppOpenAdManager();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _appOpenAdManager.load();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _appOpenAdManager.showIfAvailable();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _appOpenAdManager.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
