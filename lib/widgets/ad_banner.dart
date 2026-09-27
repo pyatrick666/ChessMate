@@ -25,6 +25,7 @@ class _AdBannerState extends State<AdBanner> {
 
   // Use Google's guaranteed test banner only when explicitly requested.
   // Normal release builds continue using the real ChessMate AdMob unit.
+  // Production build: use the real ChessMate AdMob unit.
   static const bool _forceTestAds = false;
 
   String get _adUnitId =>
