@@ -1,154 +1,155 @@
 # ChessMate ♟️
 
-ChessMate is a Flutter chess app for Android with a clean Material 3 interface, legal chess rules, local multiplayer, and a custom minimax AI.
+**ChessMate** is a Flutter-based Android chess application created and developed by **Pratik Poudel**.
 
-## Features
+I built ChessMate to create a simple, clean and playable chess experience while practising practical software development concepts including application design, state management, algorithms, game logic, testing and Android development.
 
-- **Vs AI** and **2 Players** modes
-- **Easy / Medium / Hard** AI difficulty
-- Legal move validation
-- Check, checkmate, stalemate and draw detection
-- Minimax + alpha-beta pruning
-- Piece-square-table evaluation
-- Full-screen chessboard during games
-- Board orientation support
-- Undo and new-game controls
-- Move history and game status
-- Light / dark theme
-- Settings and How to Play screens
-- Google AdMob integration:
-  - Banner ads
-  - App Open ads
-  - Interstitial ads
-- Developer support section with eSewa, Khalti and bank-transfer options
-- Unit and widget tests
+## 👨‍💻 About Me
 
-## Tech stack
+**Pratik Poudel**  
+Student Developer | Flutter & Dart
 
-- Flutter 3.47.3
-- Dart 3.13.x
-- Provider
-- `chess: ^0.8.1`
-- `google_mobile_ads`
+I created ChessMate as a personal software project to practise and demonstrate my skills in:
 
-The chess rules and move generation are handled by the `chess` package. The AI is a custom educational minimax implementation; it is not intended to replace Stockfish.
+- Flutter and Dart development
+- Mobile application UI design
+- State management
+- Algorithm implementation
+- Chess and game logic
+- Testing and debugging
+- Android application development
 
-## Project structure
+## ♟️ About ChessMate
 
-```text
-lib/
-├── engines/       # Chess AI
-├── models/        # App models and enums
-├── providers/     # Game/settings state
-├── screens/       # Home, game, settings, how-to-play, about
-├── widgets/       # Chessboard, pieces, ads and reusable UI
-└── main.dart
-test/              # Unit and widget tests
-android/           # Android project configuration
-.github/workflows/ # Automated Android release build
-```
+ChessMate lets users play chess against a computer or against another person on the same device.
 
-## Run locally
+### Main features
 
-Install Flutter first, then:
+- **Vs AI** mode
+- **2 Players** mode
+- **Easy, Medium and Hard** AI difficulty
+- Legal chess move validation
+- Check and checkmate detection
+- Draw and stalemate detection
+- Custom chess AI
+- Undo and new-game functionality
+- Board orientation
+- Light and dark themes
+- Settings
+- How to Play section
+- Full-screen gameplay
+- Developer support options
+- Google AdMob advertising
 
-```bash
-flutter pub get
-flutter analyze
-flutter test
-flutter run
-```
+## 🧠 Chess AI
 
-For Android:
+The computer opponent uses a custom implementation built for ChessMate:
 
-```bash
-flutter run -d android
-```
+- **Minimax**
+- **Alpha-beta pruning**
+- **Piece-square-table (PST) evaluation**
 
-## Build a release APK
+The AI searches possible moves and evaluates chess positions to select a move for the computer.
 
-```bash
-flutter build apk --release
-```
+The chess package is used for the underlying chess rules and legal move generation, while the AI decision-making system is implemented separately in ChessMate.
 
-The generated APK is:
+## 🛠️ Tools & Technologies I Implemented
 
-```text
-build/app/outputs/flutter-apk/app-release.apk
-```
+### Flutter & Dart
 
-## Automated GitHub release
+Used to build the Android application and its user interface.
 
-Every push to `main` runs the Android release workflow. The workflow:
+### Provider
 
-1. Installs Flutter and Java 17.
-2. Installs dependencies.
-3. Runs `flutter analyze`.
-4. Runs `flutter test`.
-5. Builds the release APK.
-6. Uploads the APK as a workflow artifact.
-7. Publishes a GitHub Release containing `app-release.apk`.
+Used for application state management, including game state and settings.
 
-The latest release can be downloaded from:
+### Chess package
 
-**GitHub Releases:** https://github.com/pyatrick666/ChessMate/releases/latest
+Version: 0.8.1
 
-## AdMob
+Used for chess rules, legal move generation, board state and game-status handling.
 
-The app uses Google Mobile Ads. Debug builds use Google's Android test ad unit IDs; release builds use the configured production IDs.
+### Custom Minimax + Alpha-beta AI
 
-**Important:** never click your own production ads while testing. Use debug builds/test ad units for development and testing.
+Implemented specifically for ChessMate to provide the computer opponent.
 
-Before publishing publicly, make sure the AdMob app/account, app-ads.txt requirements (if applicable), privacy disclosures, and consent/privacy requirements are configured for your distribution.
+### Piece-square tables
 
-## Developer support
+Implemented as part of the AI evaluation system to consider piece positioning when evaluating moves.
 
-ChessMate includes optional support buttons for eSewa, Khalti and bank transfer. These are manual support options, not an in-app payment gateway.
+### Google Mobile Ads
 
-## Testing checklist
+Version: 9.1.0
 
-Before a public release, verify:
+Implemented three AdMob formats:
 
-- Home screen loads
-- Vs AI starts correctly
-- 2 Players starts correctly
-- Easy / Medium / Hard difficulty changes correctly
-- Legal moves work
-- Check/checkmate/draw states display correctly
-- Undo works
-- New game works
-- Board orientation works
-- Theme switching works
-- Settings persist correctly
-- Ads load or fail gracefully
-- Support dialogs open and close correctly
-- No crashes when rotating/resizing the screen
+- Banner Ads
+- App Open Ads
+- Interstitial Ads
 
-Run:
+Debug builds use Google's test ad IDs, while release builds use the configured production ad IDs.
 
-```bash
-flutter analyze
-flutter test
-```
+### Material 3
 
-## itch.io
+Used for the application's modern Flutter interface and reusable UI components.
 
-ChessMate is currently distributed as an **Android APK**, so use an itch.io **Downloadable** project rather than the HTML5 browser-game uploader. Upload the release APK from the GitHub Releases page.
+### Android
 
-Do not upload the Flutter source ZIP as the playable Android build. Keep the source repository linked separately for transparency.
+Configured ChessMate as an Android application and release APK.
 
-For itch.io, prepare:
+### GitHub Actions
 
-- Game/project title: **ChessMate**
-- Platform: **Android**
-- File: `app-release.apk`
-- Version: use the latest GitHub release version
-- A short description and feature list
-- Screenshots of the home screen and chessboard
-- A clear note that the app is an Android APK
+Used to automate project verification and Android release builds.
 
-If you later create a Flutter Web build, that is a separate distribution. itch.io's HTML5 uploader expects a ZIP containing an `index.html` entry point and the required web assets.
+The workflow runs:
 
-## License
+1. Flutter dependency installation
+2. Flutter analysis
+3. Flutter tests
+4. Release APK build
+5. APK artifact upload
+6. GitHub Release creation
 
-ChessMate is an educational/demo project. Third-party packages retain their respective licenses. Check each dependency's license before redistribution.
+## 💰 Developer Support
+
+ChessMate includes optional manual support methods for the developer:
+
+- **eSewa**
+- **Khalti**
+- **Bank transfer**
+
+These are manual support/donation options. They are **not an automated in-app payment gateway**.
+
+## 🧪 Testing
+
+The project includes Flutter tests for application functionality.
+
+Before releasing changes, I use:
+
+    flutter analyze
+    flutter test
+
+## 📁 Project Structure
+
+    ChessMate/
+    ├── lib/
+    │   ├── engines/       # Custom chess AI
+    │   ├── models/        # Application models
+    │   ├── providers/     # Game and settings state
+    │   ├── screens/       # Application screens
+    │   ├── widgets/       # Chessboard, pieces, ads and UI widgets
+    │   └── main.dart      # Application entry point
+    ├── test/              # Flutter tests
+    ├── android/           # Android configuration
+    └── .github/
+        └── workflows/     # Automated Android build/release
+
+## 👤 Developer
+
+**Pratik Poudel**
+
+ChessMate is my project, and this repository contains the source code and implementation work behind the application.
+
+---
+
+**ChessMate ♟️ — Built with Flutter, Dart, algorithms, and a passion for chess.**
