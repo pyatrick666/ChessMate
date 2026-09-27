@@ -12,14 +12,14 @@ class ChessPieceWidget extends StatelessWidget {
       'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
       'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔',
     };
-    final symbol = piece.color == WHITE ? piece.type.toUpperCase() : piece.type.toLowerCase();
+    final symbol = piece.color == Color.WHITE ? piece.type.toUpperCase() : piece.type.toLowerCase();
     return Center(
       child: Text(
         glyphs[symbol] ?? '?',
         style: TextStyle(
           fontSize: 36,
           height: 1,
-          color: piece.color == WHITE ? Colors.white : const Color(0xFF1A1A1A),
+          color: piece.color == Color.WHITE ? Colors.white : const Color(0xFF1A1A1A),
           shadows: const [Shadow(offset: Offset(1, 2), blurRadius: 2, color: Colors.black54)],
         ),
       ),
