@@ -1,0 +1,8 @@
+{
+  "project": "ChessMate",
+  "version": "1.0.0+1",
+  "platform": "Flutter",
+  "purpose": "Educational chess application",
+  "engine": "Minimax with alpha-beta pruning and piece-square tables",
+  "chess_package": "0.8.1"
+}
