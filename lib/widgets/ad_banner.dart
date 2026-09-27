@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -11,39 +13,62 @@ class AdBanner extends StatefulWidget {
 
 class _AdBannerState extends State<AdBanner> {
   BannerAd? _bannerAd;
+  AdSize? _adSize;
   bool _isLoaded = false;
+  bool _isLoading = false;
+  Timer? _retryTimer;
 
-  // ChessMate production banner.
   static const String _realAdUnitId =
       'ca-app-pub-4813245225944962/2387254443';
-
-  // Google's Android banner test unit.
   static const String _testAdUnitId =
       'ca-app-pub-3940256099942544/9214589741';
 
   String get _adUnitId => kDebugMode ? _testAdUnitId : _realAdUnitId;
 
   @override
-  void initState() {
-    super.initState();
-    _loadBanner();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_bannerAd == null && !_isLoading) {
+      _loadBanner();
+    }
   }
 
-  void _loadBanner() {
+  Future<void> _loadBanner() async {
+    if (_isLoading || !mounted) return;
+    _isLoading = true;
+    _retryTimer?.cancel();
+
+    final width = MediaQuery.sizeOf(context).width.truncate();
+    final size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
+
+    if (!mounted || size == null) {
+      _isLoading = false;
+      return;
+    }
+
+    await _bannerAd?.dispose();
+    _bannerAd = null;
+    _adSize = size;
+    _isLoaded = false;
+
     final banner = BannerAd(
       adUnitId: _adUnitId,
       request: const AdRequest(),
-      size: AdSize.banner,
+      size: size,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           debugPrint(
-            'ChessMate banner loaded (${kDebugMode ? 'TEST' : 'LIVE'}).',
+            'ChessMate banner loaded (${kDebugMode ? 'TEST' : 'LIVE'}): '
+            '${ad.responseInfo}',
           );
-
-          if (!mounted) return;
-
+          _isLoading = false;
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
           setState(() {
             _bannerAd = ad as BannerAd;
+            _adSize = size;
             _isLoaded = true;
           });
         },
@@ -52,50 +77,45 @@ class _AdBannerState extends State<AdBanner> {
             'ChessMate banner failed '
             '(${kDebugMode ? 'TEST' : 'LIVE'}): $error',
           );
-
           ad.dispose();
-
-          if (!mounted) return;
-
-          setState(() {
-            _bannerAd = null;
-            _isLoaded = false;
-          });
+          _bannerAd = null;
+          _isLoaded = false;
+          _isLoading = false;
+          if (mounted) {
+            _retryTimer = Timer(const Duration(seconds: 10), _loadBanner);
+          }
         },
-        onAdImpression: (ad) {
+        onAdImpression: (_) {
           debugPrint('ChessMate banner impression recorded.');
         },
-        onAdClicked: (ad) {
+        onAdClicked: (_) {
           debugPrint('ChessMate banner clicked.');
-        },
-        onAdOpened: (ad) {
-          debugPrint('ChessMate banner opened.');
-        },
-        onAdClosed: (ad) {
-          debugPrint('ChessMate banner closed.');
         },
       ),
     );
 
-    banner.load();
+    _bannerAd = banner;
+    await banner.load();
   }
 
   @override
   void dispose() {
+    _retryTimer?.cancel();
     _bannerAd?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isLoaded || _bannerAd == null) {
+    final ad = _bannerAd;
+    final size = _adSize;
+    if (!_isLoaded || ad == null || size == null) {
       return const SizedBox.shrink();
     }
-
     return SizedBox(
-      width: _bannerAd!.size.width.toDouble(),
-      height: _bannerAd!.size.height.toDouble(),
-      child: AdWidget(ad: _bannerAd!),
+      width: size.width.toDouble(),
+      height: size.height.toDouble(),
+      child: AdWidget(ad: ad),
     );
   }
 }
