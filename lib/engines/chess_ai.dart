@@ -8,7 +8,7 @@ class ChessAi {
 
   final int depth;
 
-  static const Map<PieceType, double> _values = {
+  static final Map<PieceType, double> _values = {
     Chess.PAWN: 100,
     Chess.KNIGHT: 320,
     Chess.BISHOP: 330,
