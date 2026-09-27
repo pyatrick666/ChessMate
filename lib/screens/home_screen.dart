@@ -11,9 +11,30 @@ import 'settings_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  String _modeLabel(GameMode mode) {
+    return mode == GameMode.humanVsAi ? 'Vs AI' : '2 Players';
+  }
+
+  String _difficultyLabel(Difficulty difficulty) {
+    return switch (difficulty) {
+      Difficulty.easy => 'Easy',
+      Difficulty.medium => 'Medium',
+      Difficulty.hard => 'Hard',
+    };
+  }
+
+  IconData _difficultyIcon(Difficulty difficulty) {
+    return switch (difficulty) {
+      Difficulty.easy => Icons.sentiment_satisfied_alt_outlined,
+      Difficulty.medium => Icons.bolt_outlined,
+      Difficulty.hard => Icons.local_fire_department_outlined,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final gameSettings = settings.settings;
 
     return Scaffold(
       appBar: AppBar(
@@ -44,48 +65,111 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
+            constraints: const BoxConstraints(maxWidth: 560),
             child: ListView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
               children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 58,
+                      height: 58,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF6366F1),
+                            Color(0xFF8B5CF6),
+                          ],
+                        ),
+                      ),
+                      child: const Text(
+                        '♞',
+                        style: TextStyle(
+                          fontSize: 36,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Ready to play?',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Choose your mode and difficulty.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 26),
+                Text(
+                  'VS MODE',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                      ),
+                ),
+                const SizedBox(height: 10),
+                SegmentedButton<GameMode>(
+                  segments: const [
+                    ButtonSegment<GameMode>(
+                      value: GameMode.humanVsAi,
+                      icon: Icon(Icons.smart_toy_outlined),
+                      label: Text('Vs AI'),
+                    ),
+                    ButtonSegment<GameMode>(
+                      value: GameMode.humanVsHuman,
+                      icon: Icon(Icons.people_outline),
+                      label: Text('2 Players'),
+                    ),
+                  ],
+                  selected: {gameSettings.mode},
+                  onSelectionChanged: (selection) {
+                    settings.setMode(selection.first);
+                  },
+                ),
                 const SizedBox(height: 24),
-                Container(
-                  width: 100,
-                  height: 100,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF6366F1),
-                        Color(0xFF8B5CF6),
-                      ],
-                    ),
-                  ),
-                  child: const Text(
-                    '♞',
-                    style: TextStyle(
-                      fontSize: 62,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 22),
                 Text(
-                  'Play smarter.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  'DIFFICULTY',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                      ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'A clean Flutter chess experience with a built-in minimax AI.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                const SizedBox(height: 10),
+                Row(
+                  children: Difficulty.values.map((difficulty) {
+                    final selected = gameSettings.difficulty == difficulty;
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: difficulty == Difficulty.hard ? 0 : 8,
+                        ),
+                        child: _DifficultyCard(
+                          label: _difficultyLabel(difficulty),
+                          icon: _difficultyIcon(difficulty),
+                          selected: selected,
+                          enabled: gameSettings.mode == GameMode.humanVsAi,
+                          onTap: () => settings.setDifficulty(difficulty),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 26),
                 FilledButton.icon(
                   onPressed: () => Navigator.push(
                     context,
@@ -93,7 +177,7 @@ class HomeScreen extends StatelessWidget {
                       builder: (_) => const GameScreen(),
                     ),
                   ),
-                  icon: const Icon(Icons.play_arrow),
+                  icon: const Icon(Icons.play_arrow_rounded),
                   label: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 14),
                     child: Text(
@@ -102,7 +186,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 OutlinedButton.icon(
                   onPressed: () => Navigator.push(
                     context,
@@ -112,37 +196,93 @@ class HomeScreen extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.menu_book_outlined),
                   label: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 13),
                     child: Text('How to Play'),
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 24),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(14),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.auto_awesome,
-                          color: Color(0xFF6366F1),
-                        ),
+                        const Icon(Icons.tune_outlined),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${settings.settings.mode == GameMode.humanVsAi ? 'Human vs AI' : 'Human vs Human'} • '
-                            '${settings.settings.difficulty.name[0].toUpperCase()}'
-                            '${settings.settings.difficulty.name.substring(1)} difficulty',
+                            '${_modeLabel(gameSettings.mode)}'
+                            '${gameSettings.mode == GameMode.humanVsAi ? ' • ${_difficultyLabel(gameSettings.difficulty)}' : ''}',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
+                        const Icon(Icons.chevron_right),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Center(
-                  child: AdBanner(),
+                const SizedBox(height: 22),
+                const Center(child: AdBanner()),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DifficultyCard extends StatelessWidget {
+  const _DifficultyCard({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.primary;
+
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: Material(
+        color: selected
+            ? color.withValues(alpha: 0.12)
+            : theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 92),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: selected ? color : Colors.transparent,
+                width: selected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: selected ? color : null),
+                const SizedBox(height: 7),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+                  ),
                 ),
-                const SizedBox(height: 12),
               ],
             ),
           ),
