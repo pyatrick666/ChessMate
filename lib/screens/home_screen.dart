@@ -252,10 +252,30 @@ class HomeScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: () => _showSupportDialog(context),
-                          icon: const Icon(Icons.favorite_outline),
-                          label: const Text('Support via eSewa / Khalti'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _showSupportDialog(
+                                  context,
+                                  'eSewa',
+                                ),
+                                icon: const Icon(Icons.account_balance_wallet_outlined),
+                                label: const Text('eSewa'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _showSupportDialog(
+                                  context,
+                                  'Khalti',
+                                ),
+                                icon: const Icon(Icons.payments_outlined),
+                                label: const Text('Khalti'),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -270,7 +290,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-  void _showSupportDialog(BuildContext context) {
+  void _showSupportDialog(BuildContext context, String provider) {
     const walletNumber = '+977 9866805775';
 
     showDialog<void>(
@@ -280,7 +300,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Icon(Icons.coffee_outlined),
             SizedBox(width: 10),
-            Text('Support the Developer'),
+            Text('Support with $provider'),
           ],
         ),
         content: const Column(
@@ -293,10 +313,10 @@ class HomeScreen extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(
-              'You can send a voluntary donation using either eSewa or Khalti.',
+              'Send a voluntary donation using your $provider mobile wallet.',
             ),
             SizedBox(height: 16),
-            Text('eSewa / Khalti wallet number'),
+            Text('$provider wallet number'),
             SizedBox(height: 4),
             SelectableText(
               walletNumber,
