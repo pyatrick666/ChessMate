@@ -23,19 +23,61 @@ class SettingsScreen extends StatelessWidget {
             },
             child: Column(
               children: [
-                RadioListTile<GameMode>(value: GameMode.humanVsAi, title: const Text('Human vs AI'), subtitle: const Text('Play White against ChessMate.')),
-                RadioListTile<GameMode>(value: GameMode.humanVsHuman, title: const Text('Human vs Human'), subtitle: const Text('Two players share the device.')),
+                const RadioListTile<GameMode>(
+                  value: GameMode.humanVsAi,
+                  title: Text('Human vs AI'),
+                  subtitle: Text('Play White against ChessMate.'),
+                ),
+                const RadioListTile<GameMode>(
+                  value: GameMode.humanVsHuman,
+                  title: Text('Human vs Human'),
+                  subtitle: Text('Two players share the device.'),
+                ),
               ],
             ),
           ),
           const Divider(height: 28),
           const Text('AI difficulty', style: TextStyle(fontWeight: FontWeight.bold)),
-          DropdownButtonFormField<Difficulty>(initialValue: p.settings.difficulty, decoration: const InputDecoration(border: OutlineInputBorder(), labelText: 'Difficulty'), items: Difficulty.values.map((d) => DropdownMenuItem(value: d, child: Text(d.name[0].toUpperCase() + d.name.substring(1)))).toList(), onChanged: (v) => p.setDifficulty(v!)),
+          DropdownButtonFormField<Difficulty>(
+            initialValue: p.settings.difficulty,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Difficulty',
+            ),
+            items: Difficulty.values
+                .map(
+                  (d) => DropdownMenuItem(
+                    value: d,
+                    child: Text(d.name[0].toUpperCase() + d.name.substring(1)),
+                  ),
+                )
+                .toList(),
+            onChanged: (v) => p.setDifficulty(v!),
+          ),
           const SizedBox(height: 24),
           const Text('Board orientation', style: TextStyle(fontWeight: FontWeight.bold)),
-          SegmentedButton<BoardOrientation>(segments: const [ButtonSegment(value: BoardOrientation.white, label: Text('White'), icon: Icon(Icons.keyboard_arrow_up)), ButtonSegment(value: BoardOrientation.black, label: Text('Black'), icon: Icon(Icons.keyboard_arrow_down))], selected: {p.settings.orientation}, onSelectionChanged: (v) => p.setOrientation(v.first)),
+          SegmentedButton<BoardOrientation>(
+            segments: const [
+              ButtonSegment(
+                value: BoardOrientation.white,
+                label: Text('White'),
+                icon: Icon(Icons.keyboard_arrow_up),
+              ),
+              ButtonSegment(
+                value: BoardOrientation.black,
+                label: Text('Black'),
+                icon: Icon(Icons.keyboard_arrow_down),
+              ),
+            ],
+            selected: {p.settings.orientation},
+            onSelectionChanged: (v) => p.setOrientation(v.first),
+          ),
           const SizedBox(height: 24),
-          SwitchListTile(title: const Text('Dark theme'), value: p.darkMode, onChanged: (_) => p.toggleTheme()),
+          SwitchListTile(
+            title: const Text('Dark theme'),
+            value: p.darkMode,
+            onChanged: (_) => p.toggleTheme(),
+          ),
         ],
       ),
     );
