@@ -59,15 +59,17 @@ class _GameScreenState extends State<GameScreen> {
                 bottom: false,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final boardSize = constraints.maxWidth < constraints.maxHeight
-                        ? constraints.maxWidth
-                        : constraints.maxHeight;
+                    // Use the smaller available dimension so the complete
+                    // 8x8 board stays visible on every Android screen size.
+                    final boardSize = constraints.biggest.shortestSide;
 
                     return Center(
-                      child: SizedBox(
-                        width: boardSize,
-                        height: boardSize,
-                        child: const ChessBoard(),
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: SizedBox.square(
+                          dimension: boardSize,
+                          child: const ChessBoard(),
+                        ),
                       ),
                     );
                   },
