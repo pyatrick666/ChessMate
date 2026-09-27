@@ -9,12 +9,12 @@ class ChessAi {
   final int depth;
 
   static const Map<PieceType, double> _values = {
-    PAWN: 100,
-    KNIGHT: 320,
-    BISHOP: 330,
-    ROOK: 500,
-    QUEEN: 900,
-    KING: 20000,
+    Chess.PAWN: 100,
+    Chess.KNIGHT: 320,
+    Chess.BISHOP: 330,
+    Chess.ROOK: 500,
+    Chess.QUEEN: 900,
+    Chess.KING: 20000,
   };
 
   static const List<int> _pawnPst = [
@@ -57,7 +57,7 @@ class ChessAi {
     final moves = position.generate_moves();
     if (moves.isEmpty) return null;
 
-    final maximizing = position.turn == WHITE;
+    final maximizing = position.turn == Chess.WHITE;
     Move? bestMove;
     var bestScore = maximizing ? -double.infinity : double.infinity;
 
@@ -100,7 +100,7 @@ class ChessAi {
   }
 
   double _evaluate(Chess game) {
-    if (game.in_checkmate) return game.turn == WHITE ? -100000 : 100000;
+    if (game.in_checkmate) return game.turn == Chess.WHITE ? -100000 : 100000;
     if (game.in_draw || game.in_stalemate || game.insufficient_material) return 0;
     var score = 0.0;
     for (var i = 0; i < game.board.length; i++) {
@@ -110,19 +110,19 @@ class ChessAi {
       final rank = i >> 4;
       final tableIndex = rank * 8 + file;
       final whiteIndex = 56 - (rank * 8) + file;
-      final pstIndex = piece.color == WHITE ? whiteIndex : tableIndex;
+      final pstIndex = piece.color == Chess.WHITE ? whiteIndex : tableIndex;
       final value = (_values[piece.type] ?? 0) + _tableFor(piece.type)[pstIndex];
-      score += piece.color == WHITE ? value : -value;
+      score += piece.color == Chess.WHITE ? value : -value;
     }
     return score;
   }
 
   List<int> _tableFor(PieceType type) {
-    if (type == PAWN) return _pawnPst;
-    if (type == KNIGHT) return _knightPst;
-    if (type == BISHOP) return _bishopPst;
-    if (type == ROOK) return _rookPst;
-    if (type == QUEEN) return _queenPst;
+    if (type == Chess.PAWN) return _pawnPst;
+    if (type == Chess.KNIGHT) return _knightPst;
+    if (type == Chess.BISHOP) return _bishopPst;
+    if (type == Chess.ROOK) return _rookPst;
+    if (type == Chess.QUEEN) return _queenPst;
     return _kingPst;
   }
 }
