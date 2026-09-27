@@ -299,35 +299,44 @@ class HomeScreen extends StatelessWidget {
     );
   }
   void _showBankSupportDialog(BuildContext context) {
-    const bankName = 'Bank transfer';
-    const accountName = 'ChessMate Developer';
-    const accountNumber = 'Add your bank account number';
-    const branch = 'Add your branch name';
+    const bankName = 'Global IME Bank';
+    const accountName = 'Pratik Poudel';
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Support via Bank Transfer'),
+        title: const Row(
+          children: [
+            Icon(Icons.account_balance_outlined),
+            SizedBox(width: 10),
+            Text('Support via Bank Transfer'),
+          ],
+        ),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'If you prefer banking, you can support ChessMate by making a direct bank transfer.',
+              'Thank you for supporting ChessMate!',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'You can support future ChessMate updates through a direct bank transfer.',
             ),
             SizedBox(height: 16),
             Text('Bank: $bankName'),
+            SizedBox(height: 4),
             Text('Account name: $accountName'),
-            Text('Account number: $accountNumber'),
-            Text('Branch: $branch'),
-            SizedBox(height: 12),
+            SizedBox(height: 8),
             Text(
-              'The account details are placeholders until you provide the bank information.',
+              'Account number can be provided securely when needed.',
+              style: TextStyle(fontStyle: FontStyle.italic),
             ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
             child: const Text('Done'),
           ),
         ],
