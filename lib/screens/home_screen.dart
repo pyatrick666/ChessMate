@@ -275,14 +275,6 @@ class HomeScreen extends StatelessWidget {
                                 label: const Text('Khalti'),
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _showBankSupportDialog(context),
-                                icon: const Icon(Icons.account_balance_outlined),
-                                label: const Text('Bank'),
-                              ),
-                            ),
                           ],
                         ),
                       ],
@@ -298,52 +290,6 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-  void _showBankSupportDialog(BuildContext context) {
-    const bankName = 'Global IME Bank';
-    const accountName = 'Pratik Poudel';
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.account_balance_outlined),
-            SizedBox(width: 10),
-            Text('Support via Bank Transfer'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Thank you for supporting ChessMate!',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'You can support future ChessMate updates through a direct bank transfer.',
-            ),
-            SizedBox(height: 16),
-            Text('Bank: $bankName'),
-            SizedBox(height: 4),
-            Text('Account name: $accountName'),
-            SizedBox(height: 8),
-            Text(
-              'Account number can be provided securely when needed.',
-              style: TextStyle(fontStyle: FontStyle.italic),
-            ),
-          ],
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Done'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showSupportDialog(BuildContext context, String provider) {
     const walletNumber = '+977 9866805775';
 
