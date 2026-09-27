@@ -5,6 +5,7 @@ import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/app_card.dart';
 import '../widgets/chess_board.dart';
+import '../widgets/interstitial_ad_manager.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -19,8 +20,34 @@ class GameScreen extends StatelessWidget {
   }
 }
 
-class _GameView extends StatelessWidget {
+class _GameView extends StatefulWidget {
   const _GameView();
+
+  @override
+  State<_GameView> createState() => _GameViewState();
+}
+
+class _GameViewState extends State<_GameView> {
+  final InterstitialAdManager _interstitial = InterstitialAdManager();
+
+  @override
+  void initState() {
+    super.initState();
+    _interstitial.load();
+  }
+
+  @override
+  void dispose() {
+    _interstitial.dispose();
+    super.dispose();
+  }
+
+  void _newGame() {
+    final game = context.read<GameProvider>();
+    _interstitial.show(
+      onDismissed: game.newGame,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +56,11 @@ class _GameView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Game'),
         actions: [
-          IconButton(tooltip: 'New game', onPressed: game.newGame, icon: const Icon(Icons.refresh)),
+          IconButton(
+            tooltip: 'New game',
+            onPressed: game.thinking ? null : _newGame,
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
       body: SafeArea(
@@ -44,11 +75,26 @@ class _GameView extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        child: Icon(game.thinking ? Icons.psychology : Icons.person_outline, size: 21),
+                        child: Icon(
+                          game.thinking
+                              ? Icons.psychology
+                              : Icons.person_outline,
+                          size: 21,
+                        ),
                       ),
                       const SizedBox(width: 12),
-                      Expanded(child: Text(game.status, style: const TextStyle(fontWeight: FontWeight.w700))),
-                      if (game.thinking) const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                      Expanded(
+                        child: Text(
+                          game.status,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      if (game.thinking)
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                     ],
                   ),
                 ),
@@ -57,9 +103,21 @@ class _GameView extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: OutlinedButton.icon(onPressed: game.thinking ? null : game.undo, icon: const Icon(Icons.undo), label: const Text('Undo'))),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: game.thinking ? null : game.undo,
+                        icon: const Icon(Icons.undo),
+                        label: const Text('Undo'),
+                      ),
+                    ),
                     const SizedBox(width: 10),
-                    Expanded(child: FilledButton.icon(onPressed: game.newGame, icon: const Icon(Icons.add), label: const Text('New Game'))),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: game.thinking ? null : _newGame,
+                        icon: const Icon(Icons.add),
+                        label: const Text('New Game'),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -67,7 +125,13 @@ class _GameView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Moves', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                        'Moves',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 10),
                       if (game.history.isEmpty)
                         const Text('No moves yet.')
@@ -75,7 +139,15 @@ class _GameView extends StatelessWidget {
                         Wrap(
                           spacing: 8,
                           runSpacing: 5,
-                          children: game.history.map((m) => Chip(label: Text('${m.number}. ${m.san}'))).toList(),
+                          children: game.history
+                              .map(
+                                (m) => Chip(
+                                  label: Text(
+                                    '${m.number}. ${m.san}',
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                     ],
                   ),
