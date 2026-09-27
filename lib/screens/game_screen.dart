@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/chess_board.dart';
-import '../widgets/interstitial_ad_manager.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
@@ -28,27 +27,16 @@ class _GameView extends StatefulWidget {
 }
 
 class _GameViewState extends State<_GameView> {
-  final InterstitialAdManager _interstitial = InterstitialAdManager();
-
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    _interstitial.load();
   }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    _interstitial.dispose();
     super.dispose();
-  }
-
-  void _newGame() {
-    final game = context.read<GameProvider>();
-    _interstitial.show(
-      onDismissed: game.newGame,
-    );
   }
 
   @override
