@@ -23,7 +23,17 @@ class _AdBannerState extends State<AdBanner> {
   static const String _testAdUnitId =
       'ca-app-pub-3940256099942544/9214589741';
 
-  String get _adUnitId => kDebugMode ? _testAdUnitId : _realAdUnitId;
+  // Use Google's guaranteed test banner only when explicitly requested.
+  // Normal release builds continue using the real ChessMate AdMob unit.
+  static const bool _forceTestAds = bool.fromEnvironment(
+    'USE_TEST_ADS',
+    defaultValue: false,
+  );
+
+  String get _adUnitId =>
+      (kDebugMode || _forceTestAds) ? _testAdUnitId : _realAdUnitId;
+
+  bool get _usingTestAds => kDebugMode || _forceTestAds;
 
   @override
   void didChangeDependencies() {
@@ -58,7 +68,7 @@ class _AdBannerState extends State<AdBanner> {
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           debugPrint(
-            'ChessMate banner loaded (${kDebugMode ? 'TEST' : 'LIVE'}): '
+            'ChessMate banner loaded (${_usingTestAds ? 'TEST' : 'LIVE'}): '
             '${ad.responseInfo}',
           );
           _isLoading = false;
@@ -75,7 +85,7 @@ class _AdBannerState extends State<AdBanner> {
         onAdFailedToLoad: (ad, error) {
           debugPrint(
             'ChessMate banner failed '
-            '(${kDebugMode ? 'TEST' : 'LIVE'}): $error',
+            '(${_usingTestAds ? 'TEST' : 'LIVE'}): $error',
           );
           ad.dispose();
           _bannerAd = null;
