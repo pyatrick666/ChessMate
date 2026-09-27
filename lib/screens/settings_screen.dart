@@ -21,14 +21,14 @@ class SettingsScreen extends StatelessWidget {
             onChanged: (v) {
               if (v != null) p.setMode(v);
             },
-            child: Column(
+            child: const Column(
               children: [
-                const RadioListTile<GameMode>(
+                RadioListTile<GameMode>(
                   value: GameMode.humanVsAi,
                   title: Text('Human vs AI'),
                   subtitle: Text('Play White against ChessMate.'),
                 ),
-                const RadioListTile<GameMode>(
+                RadioListTile<GameMode>(
                   value: GameMode.humanVsHuman,
                   title: Text('Human vs Human'),
                   subtitle: Text('Two players share the device.'),
