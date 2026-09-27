@@ -4,12 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      test_ads:
-        description: 'Build a release APK using Google test banner ads'
-        required: false
-        default: false
-        type: boolean:
 
 permissions:
   contents: write
@@ -57,14 +51,7 @@ jobs:
         run: flutter test
 
       - name: Build release APK
-        env:
-          USE_TEST_ADS: ${{ inputs.test_ads }}
-        run: |
-          if [ "$USE_TEST_ADS" = "true" ]; then
-            flutter build apk --release --dart-define=USE_TEST_ADS=true
-          else
-            flutter build apk --release
-          fi
+        run: flutter build apk --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
