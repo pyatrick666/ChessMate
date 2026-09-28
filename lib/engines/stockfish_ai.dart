@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:chess/chess.dart';
-import 'package:stockfish_flutter_plus/stockfish_flutter_plus.dart';
+import 'package:stockfish/stockfish.dart';
 
 /// On-device Stockfish engine wrapper.
 ///
