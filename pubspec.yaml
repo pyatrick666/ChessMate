@@ -1,5 +1,5 @@
 name: chessmate
-description: A polished Flutter chess app with legal move validation and a minimax AI.
+description: A polished Flutter chess app with legal move validation and a Stockfish-powered master-strength AI.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -14,6 +14,7 @@ dependencies:
   chess: ^0.8.1
   google_mobile_ads: ^9.1.0
   web_socket_channel: ^3.0.3
+  stockfish_flutter_plus: ^1.0.1
 
 dev_dependencies:
   flutter_test:
