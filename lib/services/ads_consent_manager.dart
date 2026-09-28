@@ -33,6 +33,28 @@ class AdsConsentManager {
     }
   }
 
+  static Future<bool> isPrivacyOptionsRequired() async {
+    return await ConsentInformation.instance
+            .getPrivacyOptionsRequirementStatus() ==
+        PrivacyOptionsRequirementStatus.required;
+  }
+
+  static Future<void> showPrivacyOptions() {
+    final completer = Completer<void>();
+
+    ConsentForm.showPrivacyOptionsForm(
+      (error) {
+        if (error != null) {
+          completer.completeError(error);
+        } else {
+          completer.complete();
+        }
+      },
+    );
+
+    return completer.future;
+  }
+
   static Future<void> _requestConsentInfoUpdate(
     ConsentInformation consentInfo,
     ConsentRequestParameters params,
