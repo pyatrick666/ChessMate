@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:developer' as developer;
 
 import 'package:chess/chess.dart';
 
@@ -7,6 +8,11 @@ class ChessAi {
   ChessAi({this.depth = 2});
 
   final int depth;
+
+  int _nodes = 0;
+  late Stopwatch _watch;
+  late int _nodeLimit;
+  late int _timeLimitMs;
 
   static final Map<PieceType, double> _values = {
     Chess.PAWN: 100,
@@ -54,6 +60,19 @@ class ChessAi {
   ];
 
   Move? findBestMove(Chess position) {
+    _nodes = 0;
+    _watch = Stopwatch()..start();
+    _nodeLimit = switch (depth) {
+      1 => 5000,
+      2 => 12000,
+      _ => 30000,
+    };
+    _timeLimitMs = switch (depth) {
+      1 => 80,
+      2 => 140,
+      _ => 220,
+    };
+
     final moves = position.generate_moves();
     if (moves.isEmpty) return null;
 
@@ -62,6 +81,7 @@ class ChessAi {
     var bestScore = maximizing ? -double.infinity : double.infinity;
 
     for (final move in moves) {
+      if (_budgetExceeded()) break;
       final next = position.copy();
       next.make_move(move);
       final score = _minimax(next, math.max(0, depth - 1), -double.infinity,
@@ -72,12 +92,21 @@ class ChessAi {
         bestMove = move;
       }
     }
+    _watch.stop();
     return bestMove;
+  }
+
+  bool _budgetExceeded() {
+    _nodes++;
+    if (_nodes >= _nodeLimit || _watch.elapsedMilliseconds >= _timeLimitMs) {
+      return true;
+    }
+    return false;
   }
 
   double _minimax(Chess position, int remaining, double alpha, double beta,
       bool maximizing) {
-    if (remaining == 0 || position.game_over) return _evaluate(position);
+    if (remaining == 0 || position.game_over || _budgetExceeded()) return _evaluate(position);
     final moves = position.generate_moves();
     if (maximizing) {
       var value = -double.infinity;
@@ -115,6 +144,10 @@ class ChessAi {
       score += piece.color == Chess.WHITE ? value : -value;
     }
     return score;
+  }
+
+  void debugLog() {
+    developer.log('Chess AI nodes: $_nodes', name: 'ChessMate.ChessAi');
   }
 
   List<int> _tableFor(PieceType type) {
