@@ -8,7 +8,9 @@ import '../widgets/ad_banner.dart';
 import '../widgets/online_chess_board.dart';
 
 class OnlineGameScreen extends StatefulWidget {
-  const OnlineGameScreen({super.key});
+  const OnlineGameScreen({super.key, required this.online});
+
+  final OnlineGameProvider online;
   @override State<OnlineGameScreen> createState() => _OnlineGameScreenState();
 }
 
@@ -19,7 +21,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
   @override
   void initState() {
     super.initState();
-    _online = OnlineGameProvider();
+    _online = widget.online;
     _events = _online.service.events.listen((event) {
       if (!mounted) return;
       if (event['type'] == 'opponent_left') {
