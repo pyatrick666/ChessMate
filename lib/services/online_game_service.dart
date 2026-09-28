@@ -73,6 +73,19 @@ class OnlineGameService {
     });
   }
 
+  void reconnectRoom({
+    required String roomCode,
+    required String playerName,
+    required String reconnectToken,
+  }) {
+    send({
+      'type': 'reconnect_room',
+      'roomCode': roomCode,
+      'playerName': playerName,
+      'reconnectToken': reconnectToken,
+    });
+  }
+
   void sendMove({
     required String roomCode,
     required String from,
