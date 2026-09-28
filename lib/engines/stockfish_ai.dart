@@ -59,6 +59,10 @@ class StockfishAi {
       throw StateError('Stockfish AI was disposed while starting.');
     }
 
+    // Keep one stdout listener for the lifetime of the engine. Listening only
+    // when a search starts can miss output from a native stream implementation.
+    _stdoutSubscription = engine.stdout.listen(_handleEngineOutput);
+
     // The plugin starts the native engine asynchronously. Only send UCI
     // options after it reports ready.
     engine.stdin = 'setoption name Threads value ${_recommendedThreads()}';
@@ -66,10 +70,6 @@ class StockfishAi {
     engine.stdin = 'setoption name Skill Level value 20';
     engine.stdin = 'setoption name MultiPV value 1';
     engine.stdin = 'isready';
-
-    // Keep one stdout listener for the lifetime of the engine. Listening only
-    // when a search starts can miss output from a native stream implementation.
-    _stdoutSubscription = engine.stdout.listen(_handleEngineOutput);
 
     // Give the UCI initialization command a moment to be processed.
     await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -79,7 +79,7 @@ class StockfishAi {
     final trimmed = line.trim();
     if (!trimmed.startsWith('bestmove ')) return;
 
-    final parts = trimmed.split(RegExp(r'\\s+'));
+    final parts = trimmed.split(RegExp(r'\s+'));
     final move = parts.length > 1 ? parts[1] : null;
     final completer = _bestMoveCompleter;
 
