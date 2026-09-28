@@ -23,7 +23,7 @@ Future<void> main() async {
 }
 
 class ChessMateApp extends StatefulWidget {
-  const ChessMateApp({super.key, required this.adsEnabled});
+  const ChessMateApp({super.key, this.adsEnabled = true});
 
   final bool adsEnabled;
 
