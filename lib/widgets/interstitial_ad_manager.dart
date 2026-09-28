@@ -1,21 +1,26 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class InterstitialAdManager {
   InterstitialAd? _interstitialAd;
   bool _isLoading = false;
+  Timer? _retryTimer;
+  int _retrySeconds = 10;
 
   static const String _realAdUnitId =
       'ca-app-pub-4813245225944962/1867370531';
-
   static const String _testAdUnitId =
       'ca-app-pub-3940256099942544/1033173712';
 
   String get _adUnitId => kDebugMode ? _testAdUnitId : _realAdUnitId;
+  bool get _usingTestAds => kDebugMode;
 
   void load() {
     if (_isLoading || _interstitialAd != null) return;
 
+    _retryTimer?.cancel();
     _isLoading = true;
 
     InterstitialAd.load(
@@ -24,22 +29,38 @@ class InterstitialAdManager {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           _isLoading = false;
+          _retrySeconds = 10;
           _interstitialAd = ad;
+
           debugPrint(
-            'ChessMate interstitial loaded '
-            '(${kDebugMode ? 'TEST' : 'LIVE'}).',
+            'ChessMate interstitial loaded (' +
+            (_usingTestAds ? 'TEST' : 'LIVE') +
+            ').',
           );
         },
         onAdFailedToLoad: (error) {
           _isLoading = false;
           _interstitialAd = null;
+
           debugPrint(
-            'ChessMate interstitial failed '
-            '(${kDebugMode ? 'TEST' : 'LIVE'}): $error',
+            'ChessMate interstitial failed (' +
+            (_usingTestAds ? 'TEST' : 'LIVE') +
+            '): ' +
+            error.toString(),
           );
+
+          _scheduleRetry();
         },
       ),
     );
+  }
+
+  void _scheduleRetry() {
+    _retryTimer?.cancel();
+
+    final delay = _retrySeconds;
+    _retrySeconds = (_retrySeconds * 2).clamp(10, 300);
+    _retryTimer = Timer(Duration(seconds: delay), load);
   }
 
   void show({required VoidCallback onDismissed}) {
@@ -54,13 +75,13 @@ class InterstitialAdManager {
     _interstitialAd = null;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (ad) {
+      onAdShowedFullScreenContent: (_) {
         debugPrint('ChessMate interstitial shown.');
       },
-      onAdImpression: (ad) {
+      onAdImpression: (_) {
         debugPrint('ChessMate interstitial impression recorded.');
       },
-      onAdClicked: (ad) {
+      onAdClicked: (_) {
         debugPrint('ChessMate interstitial clicked.');
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
@@ -81,6 +102,7 @@ class InterstitialAdManager {
   }
 
   void dispose() {
+    _retryTimer?.cancel();
     _interstitialAd?.dispose();
     _interstitialAd = null;
   }
