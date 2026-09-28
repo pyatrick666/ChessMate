@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../widgets/ad_banner.dart';
-import '../providers/online_game_provider.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
   const OnlineLobbyScreen({super.key});
