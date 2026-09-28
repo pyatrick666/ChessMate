@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:chess/chess.dart';
 import 'package:stockfish_flutter_plus/stockfish_flutter_plus.dart';
@@ -13,8 +14,26 @@ class StockfishAi {
   Future<void>? _readyFuture;
   bool _disposed = false;
 
-  Future<void> _ensureReady() {
-    return _readyFuture ??= _startEngine();
+  Future<void> _ensureReady() async {
+    if (_disposed) {
+      throw StateError('Stockfish AI has been disposed.');
+    }
+
+    if (_readyFuture == null) {
+      _readyFuture = _startEngine();
+    }
+
+    try {
+      await _readyFuture;
+    } catch (_) {
+      _readyFuture = null;
+      rethrow;
+    }
+  }
+
+  int _recommendedThreads() {
+    final processors = Platform.numberOfProcessors;
+    return processors <= 2 ? 1 : (processors - 1).clamp(1, 8);
   }
 
   Future<void> _startEngine() async {
@@ -25,7 +44,7 @@ class StockfishAi {
     final engine = Stockfish();
     _engine = engine;
 
-    engine.stdin = 'setoption name Threads value 2';
+    engine.stdin = 'setoption name Threads value ${_recommendedThreads()}';
     engine.stdin = 'setoption name Hash value 64';
     engine.stdin = 'setoption name Skill Level value 20';
     engine.stdin = 'setoption name MultiPV value 1';
