@@ -1,3 +1,4 @@
+import 'package:chess/chess.dart' as chess;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -145,7 +146,7 @@ class _GameScreenState extends State<GameScreen> {
 
   void _confirmResign() {
     if (_game.isGameOver || _game.thinking) return;
-    final side = _game.game.turn == Color.WHITE ? 'White' : 'Black';
+    final side = _game.game.turn == chess.Color.WHITE ? 'White' : 'Black';
 
     showDialog<void>(
       context: context,
@@ -217,7 +218,7 @@ class _GameScreenState extends State<GameScreen> {
                     final boardSize = [
                       constraints.maxWidth,
                       available,
-                    ].reduce((a, b) => a < b ? a : b).clamp(220.0, 720.0);
+                    ].reduce((a, b) => a < b ? a : b).clamp(220.0, 720.0).toDouble();
 
                     return Center(
                       child: SingleChildScrollView(
