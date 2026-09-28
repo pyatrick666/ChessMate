@@ -192,10 +192,12 @@ class _GameScreenState extends State<GameScreen> {
           return PopScope(
             canPop: !game.thinking,
             child: Scaffold(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: const Color(0xFF171717),
               appBar: AppBar(
-                title: Text(local ? 'Local Multiplayer' : 'ChessMate'),
+                title: const Text('CHESSMATE', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.4)),
                 centerTitle: true,
+                backgroundColor: const Color(0xFF171717),
+                foregroundColor: Colors.white,
                 leading: IconButton(
                   tooltip: 'Back',
                   onPressed: game.thinking ? null : () => Navigator.pop(context),
@@ -222,8 +224,11 @@ class _GameScreenState extends State<GameScreen> {
 
                     return Center(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                        child: Column(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 760),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             _PlayerCard(
@@ -232,11 +237,19 @@ class _GameScreenState extends State<GameScreen> {
                               active: !game.isGameOver && !turnIsWhite,
                               isBlack: true,
                             ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              width: boardSize,
-                              height: boardSize,
-                              child: const ChessBoard(),
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2A211A),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFF6E4E32), width: 2),
+                              ),
+                              child: SizedBox(
+                                width: boardSize,
+                                height: boardSize,
+                                child: const ChessBoard(),
+                              ),
                             ),
                             const SizedBox(height: 8),
                             _PlayerCard(
@@ -245,8 +258,15 @@ class _GameScreenState extends State<GameScreen> {
                               active: !game.isGameOver && turnIsWhite,
                               isBlack: false,
                             ),
-                            const SizedBox(height: 10),
-                            Text(
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: game.thinking ? const Color(0xFF3A3025) : const Color(0xFF242424),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white12),
+                              ),
+                              child: Text(
                               game.status,
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -255,8 +275,9 @@ class _GameScreenState extends State<GameScreen> {
                                     ? Theme.of(context).colorScheme.error
                                     : null,
                               ),
+                              ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 12),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
