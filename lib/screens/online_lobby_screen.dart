@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/ad_banner.dart';
 import 'online_game_screen.dart';
+import '../providers/online_game_provider.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
   const OnlineLobbyScreen({super.key});
@@ -20,6 +21,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   bool _creating = false;
   bool _joining = false;
   bool _showServerSettings = false;
+  late final OnlineGameProvider _online;
 
   String _generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -31,7 +33,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   }
 
   void _openOnlineGame() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const OnlineGameScreen()));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => OnlineGameScreen(online: _online)));
   }
 
   Future<void> _createGame() async {
@@ -40,6 +42,14 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     if (!mounted) return;
     setState(() {
       _createdRoom = _generateRoomCode();
+      final url = _serverController.text.trim();
+      if (url.isNotEmpty) {
+        _online.connect(Uri.tryParse(url) ?? Uri()).then((_) {
+          if (_online.connectionState == OnlineConnectionState.connected) {
+            _online.createRoom(_nameController.text.trim().isEmpty ? 'White' : _nameController.text.trim());
+          }
+        });
+      }
       _creating = false;
     });
   }
@@ -58,6 +68,14 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     if (!mounted) return;
     setState(() => _joining = false);
 
+    final url = _serverController.text.trim();
+    if (url.isNotEmpty) {
+      _online.connect(Uri.tryParse(url) ?? Uri()).then((_) {
+        if (_online.connectionState == OnlineConnectionState.connected) {
+          _online.joinRoom(code, _nameController.text.trim().isEmpty ? 'Black' : _nameController.text.trim());
+        }
+      });
+    }
     _openOnlineGame();
   }
 
@@ -66,6 +84,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     _joinController.dispose();
     _serverController.dispose();
     _nameController.dispose();
+    _online.dispose();
     super.dispose();
   }
 
