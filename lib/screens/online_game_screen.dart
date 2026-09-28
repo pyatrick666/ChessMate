@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/online_game_provider.dart';
 import '../widgets/ad_banner.dart';
-import '../widgets/chess_board.dart';
+import '../widgets/online_chess_board.dart';
 
 class OnlineGameScreen extends StatefulWidget {
   const OnlineGameScreen({super.key});
