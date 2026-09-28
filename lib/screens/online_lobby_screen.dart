@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../widgets/ad_banner.dart';
+import '../providers/online_game_provider.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
   const OnlineLobbyScreen({super.key});
@@ -12,10 +13,13 @@ class OnlineLobbyScreen extends StatefulWidget {
 }
 
 class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
+  final _serverController = TextEditingController();
+  final _nameController = TextEditingController();
   final _joinController = TextEditingController();
   String? _createdRoom;
   bool _creating = false;
   bool _joining = false;
+  bool _showServerSettings = false;
 
   String _generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -62,6 +66,8 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   @override
   void dispose() {
     _joinController.dispose();
+    _serverController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -97,6 +103,58 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Player',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _nameController,
+                      maxLength: 20,
+                      decoration: const InputDecoration(
+                        labelText: 'Player name',
+                        prefixIcon: Icon(Icons.person_outline),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    ExpansionTile(
+                      title: const Text('Server connection'),
+                      initiallyExpanded: false,
+                      onExpansionChanged: (value) {
+                        setState(() => _showServerSettings = value);
+                      },
+                      children: [
+                        TextField(
+                          controller: _serverController,
+                          keyboardType: TextInputType.url,
+                          decoration: const InputDecoration(
+                            labelText: 'WebSocket server URL',
+                            hintText: 'wss://your-server.example/ws',
+                            prefixIcon: Icon(Icons.cloud_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            'Use your deployed WebSocket server here. The room UI remains usable while the backend is being connected.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             const SizedBox(height: 28),
             Card(
               child: Padding(
