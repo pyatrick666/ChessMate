@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../widgets/ad_banner.dart';
@@ -17,10 +15,8 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   final _serverController = TextEditingController();
   final _nameController = TextEditingController();
   final _joinController = TextEditingController();
-  String? _createdRoom;
   bool _creating = false;
   bool _joining = false;
-  bool _showServerSettings = false;
   late final OnlineGameProvider _online;
 
   String _generateRoomCode() {
@@ -171,10 +167,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                     ExpansionTile(
                       title: const Text('Server connection'),
                       initiallyExpanded: false,
-                      onExpansionChanged: (value) {
-                        setState(() => _showServerSettings = value);
-                      },
-                      children: [
+                                      children: [
                         TextField(
                           controller: _serverController,
                           keyboardType: TextInputType.url,
@@ -227,34 +220,6 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                           : const Icon(Icons.add_circle_outline),
                       label: Text(_creating ? 'Creating…' : 'Create Room'),
                     ),
-                    if (_createdRoom != null) ...[
-                      const SizedBox(height: 18),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          color: theme.colorScheme.primaryContainer,
-                        ),
-                        child: Column(
-                          children: [
-                            const Text('YOUR ROOM CODE'),
-                            const SizedBox(height: 6),
-                            SelectableText(
-                              _createdRoom!,
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 5,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Share this code with your opponent.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
