@@ -42,8 +42,11 @@ class GameProvider extends ChangeNotifier {
     if (_game.insufficient_material) return 'Draw — insufficient material';
     if (_game.in_threefold_repetition) return 'Draw — repetition';
     if (_game.in_draw) return 'Draw';
+    // Keep the check warning visible while the AI is calculating its reply.
+    if (_game.in_check) {
+      return '${_game.turn == Color.WHITE ? 'White' : 'Black'} is in check';
+    }
     if (_thinking) return 'Computer is thinking…';
-    if (_game.in_check) return '${_game.turn == Color.WHITE ? 'White' : 'Black'} is in check';
     return '${_game.turn == Color.WHITE ? 'White' : 'Black'} to move';
   }
 
