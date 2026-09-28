@@ -162,12 +162,18 @@ class OnlineGameProvider extends ChangeNotifier {
       case 'room_created':
         _roomCode = event['roomCode'] as String?;
         _playerColor = event['color'] as String?;
+        _fen = event['fen'] as String?;
+        _gameStatus = null;
+        _winner = null;
         _opponentConnected = false;
         break;
       case 'room_joined':
         _roomCode = event['roomCode'] as String?;
         _playerColor = event['color'] as String?;
         _opponentName = event['opponentName'] as String?;
+        _fen = event['fen'] as String?;
+        _gameStatus = null;
+        _winner = null;
         _opponentConnected = true;
         break;
       case 'opponent_joined':
