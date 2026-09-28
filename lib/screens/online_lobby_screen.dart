@@ -33,25 +33,48 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   }
 
   void _openOnlineGame() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => OnlineGameScreen(online: _online)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => OnlineGameScreen(online: _online)),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _online = OnlineGameProvider();
+  }
+
+  Future<void> _connectToServer() async {
+    final raw = _serverController.text.trim();
+    final uri = Uri.tryParse(raw);
+    if (uri == null || uri.scheme != 'ws' && uri.scheme != 'wss') {
+      throw const FormatException('Enter a valid ws:// or wss:// server URL.');
+    }
+    await _online.connect(uri);
+    if (_online.connectionState != OnlineConnectionState.connected) {
+      throw StateError(_online.errorMessage ?? 'Unable to connect to server.');
+    }
   }
 
   Future<void> _createGame() async {
+    final name = _nameController.text.trim().isEmpty
+        ? 'White'
+        : _nameController.text.trim();
     setState(() => _creating = true);
-    await Future<void>.delayed(const Duration(milliseconds: 350));
-    if (!mounted) return;
-    setState(() {
-      _createdRoom = _generateRoomCode();
-      final url = _serverController.text.trim();
-      if (url.isNotEmpty) {
-        _online.connect(Uri.tryParse(url) ?? Uri()).then((_) {
-          if (_online.connectionState == OnlineConnectionState.connected) {
-            _online.createRoom(_nameController.text.trim().isEmpty ? 'White' : _nameController.text.trim());
-          }
-        });
+    try {
+      await _connectToServer();
+      _online.createRoom(name);
+      _openOnlineGame();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        );
       }
-      _creating = false;
-    });
+    } finally {
+      if (mounted) setState(() => _creating = false);
+    }
   }
 
   Future<void> _joinGame() async {
@@ -63,20 +86,23 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       return;
     }
 
+    final name = _nameController.text.trim().isEmpty
+        ? 'Black'
+        : _nameController.text.trim();
     setState(() => _joining = true);
-    await Future<void>.delayed(const Duration(milliseconds: 350));
-    if (!mounted) return;
-    setState(() => _joining = false);
-
-    final url = _serverController.text.trim();
-    if (url.isNotEmpty) {
-      _online.connect(Uri.tryParse(url) ?? Uri()).then((_) {
-        if (_online.connectionState == OnlineConnectionState.connected) {
-          _online.joinRoom(code, _nameController.text.trim().isEmpty ? 'Black' : _nameController.text.trim());
-        }
-      });
+    try {
+      await _connectToServer();
+      _online.joinRoom(code, name);
+      _openOnlineGame();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _joining = false);
     }
-    _openOnlineGame();
   }
 
   @override
