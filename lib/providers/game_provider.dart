@@ -11,6 +11,7 @@ import '../models/move_record.dart';
 class GameProvider extends ChangeNotifier {
   GameProvider(this.settings) {
     _newGame();
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) => _tickClock());
   }
 
   final SettingsProvider settings;
@@ -21,17 +22,26 @@ class GameProvider extends ChangeNotifier {
   bool _thinking = false;
   int _moveCounter = 0;
   Color? _resignedBy;
+  Color? _timedOutBy;
+  Timer? _clockTimer;
+  int _whiteSeconds = 10 * 60;
+  int _blackSeconds = 10 * 60;
 
   Chess get game => _game;
   List<MoveRecord> get history => List.unmodifiable(_history);
   String? get selectedSquare => _selectedSquare;
   Set<String> get legalTargets => _legalTargets;
   bool get thinking => _thinking;
-  bool get isGameOver => _game.game_over || _resignedBy != null;
+  bool get isGameOver => _game.game_over || _resignedBy != null || _timedOutBy != null;
+  int get whiteSeconds => _whiteSeconds;
+  int get blackSeconds => _blackSeconds;
   bool get isHumanTurn =>
       settings.settings.mode == GameMode.humanVsHuman || _game.turn == Color.WHITE;
 
   String get status {
+    if (_timedOutBy != null) {
+      return _timedOutBy == Color.WHITE ? 'Time expired — Black wins' : 'Time expired — White wins';
+    }
     if (_resignedBy != null) {
       return _resignedBy == Color.WHITE ? 'White resigned — Black wins' : 'Black resigned — White wins';
     }
@@ -63,6 +73,22 @@ class GameProvider extends ChangeNotifier {
     _thinking = false;
     _moveCounter = 0;
     _resignedBy = null;
+    _timedOutBy = null;
+    _whiteSeconds = 10 * 60;
+    _blackSeconds = 10 * 60;
+  }
+
+  void _tickClock() {
+    if (isGameOver) return;
+    if (settings.settings.mode == GameMode.online) return;
+    if (_game.turn == Color.WHITE) {
+      if (_whiteSeconds > 0) _whiteSeconds--;
+      if (_whiteSeconds == 0) _timedOutBy = Color.WHITE;
+    } else {
+      if (_blackSeconds > 0) _blackSeconds--;
+      if (_blackSeconds == 0) _timedOutBy = Color.BLACK;
+    }
+    notifyListeners();
   }
 
   List<Move> movesFor(String square) {
