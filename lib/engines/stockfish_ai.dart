@@ -6,14 +6,15 @@ import 'package:stockfish/stockfish.dart';
 
 /// On-device Stockfish engine wrapper.
 ///
-/// Stockfish is initialized only after its native state reaches `ready`.
-/// This is important on Android because the plugin starts the native engine
-/// asynchronously and UCI commands should not be sent during startup.
+/// The native engine starts asynchronously. UCI commands are only sent after
+/// the plugin reports ready, and every "isready" command is synchronized with
+/// a corresponding "readyok" response before a search begins.
 class StockfishAi {
   Stockfish? _engine;
   Future<void>? _readyFuture;
   StreamSubscription<String>? _stdoutSubscription;
   Completer<String?>? _bestMoveCompleter;
+  Completer<void>? _readyOkCompleter;
   bool _disposed = false;
   bool _searching = false;
 
@@ -59,24 +60,58 @@ class StockfishAi {
       throw StateError('Stockfish AI was disposed while starting.');
     }
 
-    // Keep one stdout listener for the lifetime of the engine. Listening only
-    // when a search starts can miss output from a native stream implementation.
     _stdoutSubscription = engine.stdout.listen(_handleEngineOutput);
 
-    // The plugin starts the native engine asynchronously. Only send UCI
-    // options after it reports ready.
     engine.stdin = 'setoption name Threads value ${_recommendedThreads()}';
     engine.stdin = 'setoption name Hash value 64';
     engine.stdin = 'setoption name Skill Level value 20';
     engine.stdin = 'setoption name MultiPV value 1';
+
+    await _waitForReadyOk();
+  }
+
+  Future<void> _waitForReadyOk() async {
+    final engine = _engine;
+    if (engine == null || _disposed) {
+      throw StateError('Stockfish engine is unavailable.');
+    }
+
+    final existing = _readyOkCompleter;
+    if (existing != null && !existing.isCompleted) {
+      await existing.future;
+      return;
+    }
+
+    final completer = Completer<void>();
+    _readyOkCompleter = completer;
+
     engine.stdin = 'isready';
 
-    // Give the UCI initialization command a moment to be processed.
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    try {
+      await completer.future.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          throw TimeoutException('Stockfish did not respond with readyok.');
+        },
+      );
+    } finally {
+      if (identical(_readyOkCompleter, completer)) {
+        _readyOkCompleter = null;
+      }
+    }
   }
 
   void _handleEngineOutput(String line) {
     final trimmed = line.trim();
+
+    if (trimmed == 'readyok') {
+      final completer = _readyOkCompleter;
+      if (completer != null && !completer.isCompleted) {
+        completer.complete();
+      }
+      return;
+    }
+
     if (!trimmed.startsWith('bestmove ')) return;
 
     final parts = trimmed.split(RegExp(r'\s+'));
@@ -105,10 +140,11 @@ class StockfishAi {
     _bestMoveCompleter = completer;
 
     try {
-      // Reset the UCI game state before loading the current board position.
       engine.stdin = 'stop';
       engine.stdin = 'ucinewgame';
-      engine.stdin = 'isready';
+
+      await _waitForReadyOk();
+
       engine.stdin = 'position fen ${position.fen}';
       engine.stdin = 'go movetime $moveTimeMs';
 
@@ -137,6 +173,7 @@ class StockfishAi {
     final engine = _engine;
     _engine = null;
     _bestMoveCompleter = null;
+    _readyOkCompleter = null;
     _searching = false;
 
     await _stdoutSubscription?.cancel();
