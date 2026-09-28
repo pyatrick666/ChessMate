@@ -185,6 +185,7 @@ wss.on('connection', (ws) => {
         room,
       };
       existing.ws = ws;
+      existing.disconnectedAt = null;
 
       send(ws, {
         type: 'reconnected',
