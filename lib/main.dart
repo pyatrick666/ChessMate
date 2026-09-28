@@ -4,19 +4,28 @@ import 'package:provider/provider.dart';
 
 import 'providers/settings_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/ads_consent_manager.dart';
 import 'theme/app_theme.dart';
 import 'widgets/app_open_ad_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await MobileAds.instance.initialize();
+  final canRequestAds = await AdsConsentManager.initialize();
 
-  runApp(const ChessMateApp());
+  if (canRequestAds) {
+    await MobileAds.instance.initialize();
+  } else {
+    debugPrint('ChessMate: ads disabled because consent is not available.');
+  }
+
+  runApp(ChessMateApp(adsEnabled: canRequestAds));
 }
 
 class ChessMateApp extends StatefulWidget {
-  const ChessMateApp({super.key});
+  const ChessMateApp({super.key, required this.adsEnabled});
+
+  final bool adsEnabled;
 
   @override
   State<ChessMateApp> createState() => _ChessMateAppState();
@@ -24,26 +33,36 @@ class ChessMateApp extends StatefulWidget {
 
 class _ChessMateAppState extends State<ChessMateApp>
     with WidgetsBindingObserver {
-  final AppOpenAdManager _appOpenAdManager = AppOpenAdManager();
+  AppOpenAdManager? _appOpenAdManager;
+  bool _hasBeenBackgrounded = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _appOpenAdManager.load();
+
+    if (widget.adsEnabled) {
+      _appOpenAdManager = AppOpenAdManager()..load();
+    }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _appOpenAdManager.showIfAvailable();
+    if (state == AppLifecycleState.paused) {
+      _hasBeenBackgrounded = true;
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed && _hasBeenBackgrounded) {
+      _appOpenAdManager?.showIfAvailable();
+      _hasBeenBackgrounded = false;
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _appOpenAdManager.dispose();
+    _appOpenAdManager?.dispose();
     super.dispose();
   }
 
