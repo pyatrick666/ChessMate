@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/game_settings.dart';
 import '../providers/settings_provider.dart';
+import '../services/ads_consent_manager.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -77,6 +78,37 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('Dark theme'),
             value: p.darkMode,
             onChanged: (_) => p.toggleTheme(),
+          ),
+          const Divider(height: 28),
+          FutureBuilder<bool>(
+            future: AdsConsentManager.isPrivacyOptionsRequired(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) {
+                return const SizedBox.shrink();
+              }
+
+              return ListTile(
+                leading: const Icon(Icons.privacy_tip_outlined),
+                title: const Text('Privacy options'),
+                subtitle: const Text('Manage your advertising consent.'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  try {
+                    await AdsConsentManager.showPrivacyOptions();
+                  } catch (error) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Unable to open privacy options: $error',
+                          ),
+                        ),
+                      );
+                    }
+                  }
+                },
+              );
+            },
           ),
         ],
       ),
