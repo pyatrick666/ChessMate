@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../widgets/ad_banner.dart';
+import 'online_game_screen.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
   const OnlineLobbyScreen({super.key});
@@ -29,6 +30,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     ).join();
   }
 
+  void _openOnlineGame() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const OnlineGameScreen()));
+  }
+
   Future<void> _createGame() async {
     setState(() => _creating = true);
     await Future<void>.delayed(const Duration(milliseconds: 350));
@@ -53,13 +58,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     if (!mounted) return;
     setState(() => _joining = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Room $code is ready for the online server connection.',
-        ),
-      ),
-    );
+    _openOnlineGame();
   }
 
   @override
