@@ -127,6 +127,18 @@ class OnlineGameProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> reconnect(Uri serverUri) async {
+    await connect(serverUri);
+    if (_roomCode != null && _playerName != null) {
+      final color = _playerColor;
+      if (color == 'white') {
+        service.createRoom(playerName: _playerName!);
+      } else if (color == 'black') {
+        service.joinRoom(roomCode: _roomCode!, playerName: _playerName!);
+      }
+    }
+  }
+
   void _handleEvent(Map<String, dynamic> event) {
     final type = event['type'];
 
