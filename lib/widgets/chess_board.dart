@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chess/chess.dart' as chess;
 import 'package:provider/provider.dart';
 
 import '../models/game_settings.dart';
@@ -39,7 +40,7 @@ class ChessBoard extends StatelessWidget {
                     final selected = game.selectedSquare == square;
                     final legal = game.legalTargets.contains(square);
                     final isLastMove = square == lastMove?.from || square == lastMove?.to;
-                    final isCheckSquare = game.game.in_check && piece != null && piece.type == 'k' && piece.color == game.game.turn;
+                    final isCheckSquare = game.game.in_check && piece != null && piece.type == chess.Chess.KING && piece.color == game.game.turn;
 
                     return Expanded(
                       child: GestureDetector(
