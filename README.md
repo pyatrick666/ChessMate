@@ -21,12 +21,17 @@ I created ChessMate as a personal software project to practise and demonstrate m
 
 ## ♟️ About ChessMate
 
-ChessMate lets users play chess against a computer or against another person on the same device.
+ChessMate lets users play chess against a computer, against another person on the same device, or online using private multiplayer rooms.
 
 ### Main features
 
 - **Vs AI** mode
 - **2 Players** mode
+- **Online Multiplayer** mode
+- Private room creation and 6-character room codes
+- Real-time multiplayer moves over WebSockets
+- Server-side legal move validation
+- Automatic reconnection after temporary network/server disconnects
 - **Easy, Medium and Hard** AI difficulty
 - Legal chess move validation
 - Check and checkmate detection
@@ -40,6 +45,7 @@ ChessMate lets users play chess against a computer or against another person on 
 - Full-screen gameplay
 - Developer support options
 - Google AdMob advertising
+- Responsive portrait-friendly chessboard layout
 
 ## 🧠 Chess AI
 
@@ -52,6 +58,50 @@ The computer opponent uses a custom implementation built for ChessMate:
 The AI searches possible moves and evaluates chess positions to select a move for the computer.
 
 The chess package is used for the underlying chess rules and legal move generation, while the AI decision-making system is implemented separately in ChessMate.
+
+## 🌐 Online Multiplayer
+
+ChessMate includes a standalone Node.js WebSocket multiplayer server in `server/`.
+
+The online multiplayer system supports:
+
+- Private room creation and joining
+- 6-character room codes
+- White/Black player assignment
+- Server-authoritative legal move validation
+- Turn enforcement
+- Synchronized FEN game state
+- Checkmate, stalemate and draw state
+- Resignation
+- Draw offers and acceptance
+- Rematch requests
+- Opponent connection status
+- Temporary disconnect detection
+- Reconnection using a room reconnect token
+- Automatic client reconnect with increasing retry delays
+- A 30-second reconnect window for interrupted sessions
+
+### Production server
+
+The production WebSocket endpoint is:
+
+    wss://chessmate-online.onrender.com
+
+The online lobby is configured to use this endpoint by default.
+
+Because the production service uses a free hosting plan, the server may take a few seconds to wake after inactivity. The lobby displays a connection/wake message while establishing the connection.
+
+### Run the multiplayer server locally
+
+    cd server
+    npm install
+    npm start
+
+The server listens on port `8080` by default. Set the `PORT` environment variable to use another port.
+
+For local testing, point the online lobby at a WebSocket endpoint such as:
+
+    ws://localhost:8080
 
 ## 🛠️ Tools & Technologies I Implemented
 
@@ -129,6 +179,10 @@ Before releasing changes, I use:
     flutter analyze
     flutter test
 
+The GitHub Actions release workflow also builds the release APK, uploads the APK artifact and creates a GitHub Release.
+
+> **Multiplayer testing note:** Automated Flutter builds verify the client code, but full online multiplayer and network-recovery behaviour should still be manually tested using two physical devices connected to the production server.
+
 ## 📁 Project Structure
 
     ChessMate/
@@ -141,6 +195,7 @@ Before releasing changes, I use:
     │   └── main.dart      # Application entry point
     ├── test/              # Flutter tests
     ├── android/           # Android configuration
+    ├── server/             # Node.js WebSocket multiplayer server
     └── .github/
         └── workflows/     # Automated Android build/release
 
@@ -180,4 +235,8 @@ The server is authoritative for:
 - rematches
 - disconnect notifications
 
-For production, deploy the `server/` directory to a WebSocket-capable Node.js host and use its `wss://` endpoint in the ChessMate online lobby.
+For local development, the server can be started with `npm start` and the lobby can be pointed at a local `ws://` endpoint. Production builds use the hosted `wss://chessmate-online.onrender.com` endpoint by default.
+
+### Production status
+
+The current `main` branch has a successful automated release build, including Flutter analysis, tests, release APK compilation, artifact upload and GitHub Release publishing.
