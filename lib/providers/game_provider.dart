@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:chess/chess.dart';
 import 'package:flutter/foundation.dart';
 
-import '../engines/chess_ai.dart';
+import '../engines/stockfish_ai.dart';
 import '../models/game_settings.dart';
 import 'settings_provider.dart';
 import '../models/move_record.dart';
@@ -15,12 +15,15 @@ class GameProvider extends ChangeNotifier {
   }
 
   final SettingsProvider settings;
+  final StockfishAi _stockfishAi = StockfishAi();
+
   Chess _game = Chess();
   final List<MoveRecord> _history = [];
   String? _selectedSquare;
   Set<String> _legalTargets = {};
   bool _thinking = false;
   int _moveCounter = 0;
+  int _aiGeneration = 0;
   Color? _resignedBy;
   Color? _timedOutBy;
   Timer? _clockTimer;
@@ -52,11 +55,10 @@ class GameProvider extends ChangeNotifier {
     if (_game.insufficient_material) return 'Draw — insufficient material';
     if (_game.in_threefold_repetition) return 'Draw — repetition';
     if (_game.in_draw) return 'Draw';
-    // Keep the check warning visible while the AI is calculating its reply.
     if (_game.in_check) {
       return '${_game.turn == Color.WHITE ? 'White' : 'Black'} is in check';
     }
-    if (_thinking) return 'Computer is thinking…';
+    if (_thinking) return 'Master AI is thinking…';
     return '${_game.turn == Color.WHITE ? 'White' : 'Black'} to move';
   }
 
@@ -66,6 +68,7 @@ class GameProvider extends ChangeNotifier {
   }
 
   void _newGame() {
+    _aiGeneration++;
     _game = Chess();
     _history.clear();
     _selectedSquare = null;
@@ -138,47 +141,75 @@ class GameProvider extends ChangeNotifier {
     _legalTargets = {};
     notifyListeners();
 
-    if (!_game.game_over && settings.settings.mode == GameMode.humanVsAi && _game.turn == Color.BLACK) {
+    if (!_game.game_over &&
+        settings.settings.mode == GameMode.humanVsAi &&
+        _game.turn == Color.BLACK) {
       unawaited(_makeAiMove());
     }
   }
 
+  int _thinkingTimeForDifficulty() {
+    return switch (settings.settings.difficulty) {
+      // Still much stronger than the old depth-1 search.
+      Difficulty.easy => 1200,
+      // Strong default play without making the player wait too long.
+      Difficulty.medium => 3000,
+      // Full-strength Stockfish with a longer search window.
+      Difficulty.hard => 7000,
+    };
+  }
+
+  Move? _moveFromUci(String uci) {
+    if (uci.length < 4) return null;
+    final from = uci.substring(0, 2);
+    final to = uci.substring(2, 4);
+
+    final legalMoves = _game.generate_moves();
+    for (final move in legalMoves) {
+      if (move.fromAlgebraic == from && move.toAlgebraic == to) {
+        return move;
+      }
+    }
+    return null;
+  }
+
   Future<void> _makeAiMove() async {
+    final generation = _aiGeneration;
     _thinking = true;
     notifyListeners();
 
     try {
-      // Give Flutter a frame to update the UI before calculating.
       await Future<void>.delayed(const Duration(milliseconds: 180));
 
-      if (_game.game_over || settings.settings.mode != GameMode.humanVsAi) {
+      if (generation != _aiGeneration ||
+          _game.game_over ||
+          settings.settings.mode != GameMode.humanVsAi ||
+          _game.turn != Color.BLACK) {
         return;
       }
 
-      final depth = switch (settings.settings.difficulty) {
-        Difficulty.easy => 1,
-        Difficulty.medium => 2,
-        Difficulty.hard => 3,
-      };
+      final moveUci = await _stockfishAi.findBestMove(
+        _game,
+        moveTimeMs: _thinkingTimeForDifficulty(),
+      );
 
-      Move? move;
-
-      try {
-        final ai = ChessAi(depth: depth);
-        move = ai.findBestMove(_game);
-      } catch (error, stackTrace) {
-        debugPrint('ChessMate AI error: $error');
-        debugPrintStack(stackTrace: stackTrace);
+      if (generation != _aiGeneration ||
+          _game.game_over ||
+          settings.settings.mode != GameMode.humanVsAi ||
+          _game.turn != Color.BLACK) {
+        return;
       }
 
-      // Always keep the game playable if the search encounters an
-      // unexpected runtime error. A legal move is safer than leaving the
-      // game permanently stuck on "Computer is thinking…".
-      if (move == null && !_game.game_over) {
+      Move? move;
+      if (moveUci != null) {
+        move = _moveFromUci(moveUci);
+      }
+
+      if (move == null) {
+        debugPrint('Stockfish did not return a legal move: $moveUci');
         final legalMoves = _game.generate_moves();
         if (legalMoves.isNotEmpty) {
           move = legalMoves.first;
-          debugPrint('ChessMate AI fallback move used.');
         }
       }
 
@@ -204,17 +235,23 @@ class GameProvider extends ChangeNotifier {
           }
         }
       }
+    } catch (error, stackTrace) {
+      debugPrint('ChessMate Stockfish error: $error');
+      debugPrintStack(stackTrace: stackTrace);
     } finally {
-      // This must always run, even if the AI throws an exception.
-      _thinking = false;
-      notifyListeners();
+      if (generation == _aiGeneration) {
+        _thinking = false;
+        notifyListeners();
+      }
     }
   }
 
   @override
   void dispose() {
+    _aiGeneration++;
     _clockTimer?.cancel();
     _clockTimer = null;
+    unawaited(_stockfishAi.dispose());
     super.dispose();
   }
 
