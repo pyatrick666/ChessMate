@@ -268,14 +268,14 @@ class _GameScreenState extends State<GameScreen> {
                                 border: Border.all(color: Colors.white12),
                               ),
                               child: Text(
-                              game.status,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: game.game.in_check
-                                    ? Theme.of(context).colorScheme.error
-                                    : null,
-                              ),
+                                game.status,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: game.game.in_check
+                                      ? Theme.of(context).colorScheme.error
+                                      : Colors.white,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 12),
