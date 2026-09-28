@@ -10,7 +10,7 @@ class InterstitialAdManager {
   int _retrySeconds = 10;
 
   static const String _realAdUnitId =
-      'ca-app-pub-4813245225944962/1867370531';
+      'ca-app-pub-4813245225944962/6566172601';
   static const String _testAdUnitId =
       'ca-app-pub-3940256099942544/1033173712';
 
