@@ -18,6 +18,7 @@ class _GameScreenState extends State<GameScreen> {
   late final GameProvider _game;
   final InterstitialAdManager _interstitial = InterstitialAdManager();
   bool _gameOverAdShown = false;
+  bool _gameOverDialogShown = false;
 
   @override
   void initState() {
@@ -29,10 +30,73 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onGameChanged() {
-    if (_game.isGameOver && !_gameOverAdShown && mounted) {
-      _gameOverAdShown = true;
-      _interstitial.show(onDismissed: () {});
+    if (!_game.isGameOver || _gameOverDialogShown || !mounted) return;
+
+    _gameOverDialogShown = true;
+
+    void showResult() {
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showGameOverDialog();
+      });
     }
+
+    if (!_gameOverAdShown) {
+      _gameOverAdShown = true;
+      _interstitial.show(onDismissed: showResult);
+    } else {
+      showResult();
+    }
+  }
+
+  void _showGameOverDialog() {
+    final status = _game.status;
+    final isCheckmate = _game.game.in_checkmate;
+    final title = isCheckmate ? 'CHECKMATE!' : 'GAME OVER';
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              status,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 17),
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  _gameOverDialogShown = false;
+                  _gameOverAdShown = false;
+                  _game.newGame();
+                  _interstitial.load();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Play Again'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  if (mounted) Navigator.of(context).pop();
+                },
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Back'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
