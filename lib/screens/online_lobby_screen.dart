@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../widgets/ad_banner.dart';
@@ -12,21 +14,14 @@ class OnlineLobbyScreen extends StatefulWidget {
 }
 
 class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
-  final _serverController = TextEditingController();
+  static const _productionServer = 'wss://chessmate-online.onrender.com';
+
+  final _serverController = TextEditingController(text: _productionServer);
   final _nameController = TextEditingController();
   final _joinController = TextEditingController();
   bool _creating = false;
   bool _joining = false;
   late final OnlineGameProvider _online;
-
-  String _generateRoomCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    final random = Random.secure();
-    return List.generate(
-      6,
-      (_) => chars[random.nextInt(chars.length)],
-    ).join();
-  }
 
   void _openOnlineGame() {
     Navigator.push(
@@ -166,14 +161,15 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                     ),
                     ExpansionTile(
                       title: const Text('Server connection'),
+                      subtitle: const Text('Production server connected'),
                       initiallyExpanded: false,
-                                      children: [
+                      children: [
                         TextField(
                           controller: _serverController,
                           keyboardType: TextInputType.url,
                           decoration: const InputDecoration(
                             labelText: 'WebSocket server URL',
-                            hintText: 'wss://your-server.example/ws',
+                            hintText: 'wss://chessmate-online.onrender.com',
                             prefixIcon: Icon(Icons.cloud_outlined),
                           ),
                         ),
@@ -181,7 +177,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                         const Padding(
                           padding: EdgeInsets.only(bottom: 8),
                           child: Text(
-                            'Use your deployed WebSocket server here. The room UI remains usable while the backend is being connected.',
+                            'Production server: wss://chessmate-online.onrender.com\nYou can replace it with another WebSocket server for testing.',
                           ),
                         ),
                       ],
