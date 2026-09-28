@@ -27,6 +27,10 @@ class OnlineGameProvider extends ChangeNotifier {
   String? _opponentName;
   String? _errorMessage;
   bool _opponentConnected = false;
+  String? _fen;
+  String? _lastMoveFrom;
+  String? _lastMoveTo;
+  String? _gameStatus;
 
   OnlineConnectionState get connectionState => _connectionState;
   String? get roomCode => _roomCode;
@@ -35,6 +39,10 @@ class OnlineGameProvider extends ChangeNotifier {
   String? get opponentName => _opponentName;
   String? get errorMessage => _errorMessage;
   bool get opponentConnected => _opponentConnected;
+  String? get fen => _fen;
+  String? get lastMoveFrom => _lastMoveFrom;
+  String? get lastMoveTo => _lastMoveTo;
+  String? get gameStatus => _gameStatus;
 
   Future<void> connect(Uri serverUri) async {
     _connectionState = OnlineConnectionState.connecting;
@@ -117,6 +125,19 @@ class OnlineGameProvider extends ChangeNotifier {
     final type = event['type'];
 
     switch (type) {
+      case 'move':
+      case 'rematch_started':
+        _fen = event['fen'] as String?;
+        _lastMoveFrom = event['from'] as String?;
+        _lastMoveTo = event['to'] as String?;
+        _gameStatus = event['checkmate'] == true
+            ? 'checkmate'
+            : event['stalemate'] == true
+                ? 'stalemate'
+                : event['draw'] == true
+                    ? 'draw'
+                    : null;
+        break;
       case 'room_created':
         _roomCode = event['roomCode'] as String?;
         _playerColor = event['color'] as String?;
@@ -134,6 +155,12 @@ class OnlineGameProvider extends ChangeNotifier {
         break;
       case 'opponent_left':
         _opponentConnected = false;
+        break;
+      case 'resigned':
+        _gameStatus = '${event['color']} resigned';
+        break;
+      case 'draw_accepted':
+        _gameStatus = 'draw';
         break;
       case 'error':
         _errorMessage = event['message']?.toString();
