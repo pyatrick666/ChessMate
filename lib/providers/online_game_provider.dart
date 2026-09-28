@@ -31,6 +31,9 @@ class OnlineGameProvider extends ChangeNotifier {
   String? _lastMoveFrom;
   String? _lastMoveTo;
   String? _gameStatus;
+  String? _winner;
+  bool _rematchRequested = false;
+  bool _drawOffered = false;
 
   OnlineConnectionState get connectionState => _connectionState;
   String? get roomCode => _roomCode;
@@ -43,6 +46,9 @@ class OnlineGameProvider extends ChangeNotifier {
   String? get lastMoveFrom => _lastMoveFrom;
   String? get lastMoveTo => _lastMoveTo;
   String? get gameStatus => _gameStatus;
+  String? get winner => _winner;
+  bool get rematchRequested => _rematchRequested;
+  bool get drawOffered => _drawOffered;
 
   Future<void> connect(Uri serverUri) async {
     _connectionState = OnlineConnectionState.connecting;
@@ -130,6 +136,9 @@ class OnlineGameProvider extends ChangeNotifier {
         _fen = event['fen'] as String?;
         _lastMoveFrom = event['from'] as String?;
         _lastMoveTo = event['to'] as String?;
+        _winner = event['checkmate'] == true
+            ? ((event['turn']?.toString() == 'w') ? 'black' : 'white')
+            : null;
         _gameStatus = event['checkmate'] == true
             ? 'checkmate'
             : event['stalemate'] == true
@@ -157,9 +166,21 @@ class OnlineGameProvider extends ChangeNotifier {
         _opponentConnected = false;
         break;
       case 'resigned':
-        _gameStatus = '${event['color']} resigned';
+        final resigned = event['color']?.toString();
+        _winner = resigned == 'white' ? 'black' : 'white';
+        _gameStatus = '$resigned resigned';
+        break;
+      case 'draw_offered':
+        _drawOffered = true;
+        break;
+      case 'rematch_requested':
+        _rematchRequested = true;
+        break;
+      case 'rematch_waiting':
+        _rematchRequested = false;
         break;
       case 'draw_accepted':
+        _drawOffered = false;
         _gameStatus = 'draw';
         break;
       case 'error':
