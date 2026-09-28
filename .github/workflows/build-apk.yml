@@ -1,4 +1,5 @@
 name: Build ChessMate APK
+# Release pipeline: analyze, test, build, artifact, and GitHub release.
 
 on:
   push:
