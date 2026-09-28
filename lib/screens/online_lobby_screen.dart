@@ -1,0 +1,225 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+class OnlineLobbyScreen extends StatefulWidget {
+  const OnlineLobbyScreen({super.key});
+
+  @override
+  State<OnlineLobbyScreen> createState() => _OnlineLobbyScreenState();
+}
+
+class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
+  final _joinController = TextEditingController();
+  String? _createdRoom;
+  bool _creating = false;
+  bool _joining = false;
+
+  String _generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final random = Random.secure();
+    return List.generate(
+      6,
+      (_) => chars[random.nextInt(chars.length)],
+    ).join();
+  }
+
+  Future<void> _createGame() async {
+    setState(() => _creating = true);
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    if (!mounted) return;
+    setState(() {
+      _createdRoom = _generateRoomCode();
+      _creating = false;
+    });
+  }
+
+  Future<void> _joinGame() async {
+    final code = _joinController.text.trim().toUpperCase();
+    if (code.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a 6-character room code.')),
+      );
+      return;
+    }
+
+    setState(() => _joining = true);
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    if (!mounted) return;
+    setState(() => _joining = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Room $code is ready for the online server connection.',
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _joinController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Online Multiplayer'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Icon(
+              Icons.public,
+              size: 56,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Play Chess Online',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Create a private room or join a friend with a room code.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 28),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Create a game',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Generate a room code and share it with your opponent.',
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: _creating ? null : _createGame,
+                      icon: _creating
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.add_circle_outline),
+                      label: Text(_creating ? 'Creating…' : 'Create Room'),
+                    ),
+                    if (_createdRoom != null) ...[
+                      const SizedBox(height: 18),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          color: theme.colorScheme.primaryContainer,
+                        ),
+                        child: Column(
+                          children: [
+                            const Text('YOUR ROOM CODE'),
+                            const SizedBox(height: 6),
+                            SelectableText(
+                              _createdRoom!,
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 5,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Share this code with your opponent.',
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Join a game',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('Enter the room code supplied by your opponent.'),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _joinController,
+                      textCapitalization: TextCapitalization.characters,
+                      maxLength: 6,
+                      decoration: const InputDecoration(
+                        labelText: 'Room code',
+                        hintText: 'ABC123',
+                        prefixIcon: Icon(Icons.key_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    FilledButton.icon(
+                      onPressed: _joining ? null : _joinGame,
+                      icon: _joining
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.login),
+                      label: Text(_joining ? 'Joining…' : 'Join Room'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Card(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: const Padding(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.cloud_outlined),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Online rooms are prepared in the app UI. The next multiplayer layer connects these rooms to a persistent server so two devices can exchange and validate moves in real time.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
