@@ -33,7 +33,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
   }
 
   @override
-  void dispose() { _events?.cancel(); _online.dispose(); super.dispose(); }
+  void dispose() { _events?.cancel(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,17 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
                       children: [
                         _PlayerCard(name: online.opponentName ?? 'Opponent', subtitle: connected ? 'Connected' : 'Waiting for opponent…', icon: Icons.person_outline),
                         const SizedBox(height: 10),
-                        SizedBox(width: boardSize, height: boardSize, child: const ChessBoard()),
+                        SizedBox(
+                          width: boardSize,
+                          height: boardSize,
+                          child: online.fen == null
+                              ? const Center(child: CircularProgressIndicator())
+                              : OnlineChessBoard(
+                                  fen: online.fen!,
+                                  blackAtBottom: online.playerColor == 'black',
+                                  onMove: (from, to) => online.sendMove(from: from, to: to),
+                                ),
+                        ),
                         const SizedBox(height: 10),
                         _PlayerCard(name: online.playerName ?? 'You', subtitle: online.playerColor == null ? 'Connecting…' : (online.playerColor == 'white' ? 'White' : 'Black'), icon: Icons.account_circle_outlined),
                         const SizedBox(height: 12),
