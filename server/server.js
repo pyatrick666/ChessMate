@@ -9,13 +9,22 @@ const PORT = Number(process.env.PORT || 8080);
 // Render, Railway, Fly.io and similar hosts can use this HTTP endpoint
 // when the WebSocket server is exposed behind a health check.
 const httpServer = createServer((req, res) => {
-  if (req.url === '/health') {
-    res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', service: 'chessmate-online' }));
+  const path = new URL(req.url || '/', 'http://localhost').pathname;
+
+  if (path === '/' || path === '/health') {
+    res.writeHead(200, {
+      'content-type': 'application/json',
+      'cache-control': 'no-store',
+    });
+    res.end(JSON.stringify({
+      status: 'ok',
+      service: 'chessmate-online',
+    }));
     return;
   }
-  res.writeHead(404);
-  res.end();
+
+  res.writeHead(404, { 'content-type': 'text/plain' });
+  res.end('Not Found');
 });
 
 const wss = new WebSocketServer({ server: httpServer });
