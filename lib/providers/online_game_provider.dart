@@ -26,6 +26,11 @@ class OnlineGameProvider extends ChangeNotifier {
   String? _playerColor;
   String? _opponentName;
   String? _errorMessage;
+  Uri? _serverUri;
+  String? _reconnectToken;
+  Timer? _reconnectTimer;
+  int _reconnectAttempt = 0;
+  bool _manualDisconnect = false;
   bool _opponentConnected = false;
   String? _fen;
   String? _lastMoveFrom;
@@ -49,8 +54,13 @@ class OnlineGameProvider extends ChangeNotifier {
   String? get winner => _winner;
   bool get rematchRequested => _rematchRequested;
   bool get drawOffered => _drawOffered;
+  bool get isReconnecting => _reconnectTimer != null || _connectionState == OnlineConnectionState.connecting;
 
   Future<void> connect(Uri serverUri) async {
+    _serverUri = serverUri;
+    _manualDisconnect = false;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
     _connectionState = OnlineConnectionState.connecting;
     _errorMessage = null;
     notifyListeners();
@@ -58,6 +68,7 @@ class OnlineGameProvider extends ChangeNotifier {
     try {
       await service.connect(serverUri: serverUri);
       _connectionState = OnlineConnectionState.connected;
+      _reconnectAttempt = 0;
     } catch (error) {
       _connectionState = OnlineConnectionState.disconnected;
       _errorMessage = error.toString();
@@ -129,14 +140,27 @@ class OnlineGameProvider extends ChangeNotifier {
 
   Future<void> reconnect(Uri serverUri) async {
     await connect(serverUri);
-    if (_roomCode != null && _playerName != null) {
-      final color = _playerColor;
-      if (color == 'white') {
-        service.createRoom(playerName: _playerName!);
-      } else if (color == 'black') {
-        service.joinRoom(roomCode: _roomCode!, playerName: _playerName!);
-      }
+    if (_roomCode != null && _playerName != null && _reconnectToken != null) {
+      service.reconnectRoom(
+        roomCode: _roomCode!,
+        playerName: _playerName!,
+        reconnectToken: _reconnectToken!,
+      );
     }
+  }
+
+  void _scheduleReconnect() {
+    if (_manualDisconnect || _serverUri == null || _roomCode == null || _playerName == null || _reconnectToken == null) {
+      return;
+    }
+    _reconnectTimer?.cancel();
+    final delay = Duration(seconds: (2 << _reconnectAttempt).clamp(2, 30));
+    _reconnectAttempt = (_reconnectAttempt + 1).clamp(0, 4);
+    _reconnectTimer = Timer(delay, () async {
+      _reconnectTimer = null;
+      await reconnect(_serverUri!);
+    });
+    notifyListeners();
   }
 
   void _handleEvent(Map<String, dynamic> event) {
@@ -162,6 +186,7 @@ class OnlineGameProvider extends ChangeNotifier {
       case 'room_created':
         _roomCode = event['roomCode'] as String?;
         _playerColor = event['color'] as String?;
+        _reconnectToken = event['reconnectToken'] as String? ?? _reconnectToken;
         _fen = event['fen'] as String?;
         _gameStatus = null;
         _winner = null;
@@ -170,6 +195,7 @@ class OnlineGameProvider extends ChangeNotifier {
       case 'room_joined':
         _roomCode = event['roomCode'] as String?;
         _playerColor = event['color'] as String?;
+        _reconnectToken = event['reconnectToken'] as String? ?? _reconnectToken;
         _opponentName = event['opponentName'] as String?;
         _fen = event['fen'] as String?;
         _gameStatus = null;
@@ -204,17 +230,35 @@ class OnlineGameProvider extends ChangeNotifier {
       case 'error':
         _errorMessage = event['message']?.toString();
         break;
+      case 'reconnected':
+        _connectionState = OnlineConnectionState.connected;
+        _opponentConnected = event['opponentConnected'] == true;
+        _fen = event['fen'] as String? ?? _fen;
+        _errorMessage = null;
+        _reconnectAttempt = 0;
+        break;
       case 'disconnected':
         _connectionState = OnlineConnectionState.disconnected;
         _opponentConnected = false;
+        _scheduleReconnect();
         break;
     }
 
     notifyListeners();
   }
 
+  Future<void> disconnect() async {
+    _manualDisconnect = true;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    await service.disconnect();
+    _connectionState = OnlineConnectionState.disconnected;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
+    _reconnectTimer?.cancel();
     _subscription?.cancel();
     service.dispose();
     super.dispose();
