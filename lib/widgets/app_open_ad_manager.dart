@@ -8,7 +8,7 @@ class AppOpenAdManager {
   DateTime? _loadedAt;
 
   static const String _realAdUnitId =
-      'ca-app-pub-4813245225944962/6566172601';
+      'ca-app-pub-4813245225944962/1867370531';
   static const String _testAdUnitId =
       'ca-app-pub-3940256099942544/9257395921';
 
