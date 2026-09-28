@@ -123,12 +123,12 @@ class _GameScreenState extends State<GameScreen> {
                                 dense: true,
                                 leading: CircleAvatar(
                                   radius: 14,
-                                  child: Text('${{white.number}'),
+                                  child: Text('${white.number}'),
                                 ),
                                 title: Text(
                                   black == null
-                                      ? '${{white.san}  …'
-                                      : '${{white.san}    ${{black.san}',
+                                      ? '${white.san}  …'
+                                      : '${white.san}    ${black.san}',
                                   style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
                               );
@@ -152,7 +152,7 @@ class _GameScreenState extends State<GameScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Resign game?'),
-        content: Text('Are you sure ${{side} wants to resign?'),
+        content: Text('Are you sure ${side} wants to resign?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -187,7 +187,7 @@ class _GameScreenState extends State<GameScreen> {
         builder: (context, game, _) {
           final settings = context.read<SettingsProvider>().settings;
           final local = settings.mode == GameMode.humanVsHuman;
-          final turnIsWhite = game.game.turn == Color.WHITE;
+          final turnIsWhite = game.game.turn == chess.Color.WHITE;
 
           return PopScope(
             canPop: !game.thinking,
