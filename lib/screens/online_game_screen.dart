@@ -63,7 +63,45 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
                         const SizedBox(height: 10),
                         _PlayerCard(name: online.playerName ?? 'You', subtitle: online.playerColor == null ? 'Connecting…' : (online.playerColor == 'white' ? 'White' : 'Black'), icon: Icons.account_circle_outlined),
                         const SizedBox(height: 12),
-                        if (status != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(status == 'checkmate' ? 'CHECKMATE' : status == 'draw' ? 'DRAW' : status, style: const TextStyle(fontWeight: FontWeight.bold)))),
+                        if (status != null)
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    status == 'checkmate'
+                                        ? 'CHECKMATE'
+                                        : status == 'draw'
+                                            ? 'DRAW'
+                                            : status,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  if (online.winner != null) ...[
+                                    const SizedBox(height: 4),
+                                    Text('Winner: ${online.winner}'),
+                                  ],
+                                  const SizedBox(height: 10),
+                                  FilledButton.icon(
+                                    onPressed: online.roomCode == null ? null : online.rematch,
+                                    icon: const Icon(Icons.replay),
+                                    label: const Text('Play Again'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (online.drawOffered)
+                          Card(
+                            child: ListTile(
+                              leading: const Icon(Icons.handshake_outlined),
+                              title: const Text('Your opponent offered a draw'),
+                              trailing: FilledButton(
+                                onPressed: online.acceptDraw,
+                                child: const Text('Accept'),
+                              ),
+                            ),
+                          ),
                         const SizedBox(height: 8),
                         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                           OutlinedButton.icon(onPressed: online.roomCode == null ? null : online.resign, icon: const Icon(Icons.flag_outlined), label: const Text('Resign')),
