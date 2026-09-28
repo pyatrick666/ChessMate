@@ -211,6 +211,13 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    _clockTimer = null;
+    super.dispose();
+  }
+
   void resign() {
     if (_thinking || isGameOver) return;
     _resignedBy = _game.turn;
