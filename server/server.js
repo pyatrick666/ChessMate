@@ -2,12 +2,12 @@ import { randomBytes } from 'node:crypto';
 import { WebSocketServer } from 'ws';
 import { Chess } from 'chess.js';
 
+import { createServer } from 'node:http';
+
 const PORT = Number(process.env.PORT || 8080);
-const wss = new WebSocketServer({ server: httpServer });
 
 // Render, Railway, Fly.io and similar hosts can use this HTTP endpoint
 // when the WebSocket server is exposed behind a health check.
-import { createServer } from 'node:http';
 const httpServer = createServer((req, res) => {
   if (req.url === '/health') {
     res.writeHead(200, { 'content-type': 'application/json' });
@@ -17,6 +17,8 @@ const httpServer = createServer((req, res) => {
   res.writeHead(404);
   res.end();
 });
+
+const wss = new WebSocketServer({ server: httpServer });
 
 
 const rooms = new Map();
