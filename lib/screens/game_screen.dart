@@ -71,7 +71,7 @@ class _GameScreenState extends State<GameScreen> {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted && !_gameOverAdShown) {
                     _gameOverAdShown = true;
-                    _interstitial.show();
+                    _interstitial.show(onDismissed: () {});
                   }
                 });
               },
