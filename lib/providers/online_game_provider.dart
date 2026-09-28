@@ -72,6 +72,7 @@ class OnlineGameProvider extends ChangeNotifier {
     } catch (error) {
       _connectionState = OnlineConnectionState.disconnected;
       _errorMessage = error.toString();
+      _scheduleReconnect();
     }
 
     notifyListeners();
@@ -154,7 +155,7 @@ class OnlineGameProvider extends ChangeNotifier {
       return;
     }
     _reconnectTimer?.cancel();
-    final delay = Duration(seconds: (2 << _reconnectAttempt).clamp(2, 30));
+    final delay = Duration(seconds: (2 << _reconnectAttempt).clamp(2, 30) as int);
     _reconnectAttempt = (_reconnectAttempt + 1).clamp(0, 4);
     _reconnectTimer = Timer(delay, () async {
       _reconnectTimer = null;
