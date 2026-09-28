@@ -1,0 +1,13 @@
+{
+  "name": "chessmate-online-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "ws": "^8.18.3"
+  }
+}
