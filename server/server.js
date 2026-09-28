@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { WebSocketServer } from 'ws';
 import { Chess } from 'chess.js';
 
@@ -105,6 +105,7 @@ wss.on('connection', (ws) => {
         ws,
         name: String(message.playerName || 'White').trim().slice(0, 20) || 'White',
         color: 'white',
+        reconnectToken: randomUUID(),
         room,
       };
 
@@ -115,6 +116,7 @@ wss.on('connection', (ws) => {
         type: 'room_created',
         roomCode: code,
         color: 'white',
+        reconnectToken: player.reconnectToken,
         ...state(room),
       });
       return;
@@ -140,6 +142,7 @@ wss.on('connection', (ws) => {
         ws,
         name: String(message.playerName || 'Black').trim().slice(0, 20) || 'Black',
         color: 'black',
+        reconnectToken: randomUUID(),
         room,
       };
 
@@ -149,6 +152,7 @@ wss.on('connection', (ws) => {
         type: 'room_joined',
         roomCode: code,
         color: 'black',
+        reconnectToken: player.reconnectToken,
         opponentName: room.players[0].name,
         ...state(room),
       });
@@ -157,6 +161,39 @@ wss.on('connection', (ws) => {
         type: 'opponent_joined',
         opponentName: player.name,
       }, ws);
+      return;
+    }
+
+    if (message.type === 'reconnect_room') {
+      if (player) return;
+
+      const code = String(message.roomCode || '').trim().toUpperCase();
+      const room = rooms.get(code);
+      const token = String(message.reconnectToken || '');
+      const existing = room?.players.find((item) => item.reconnectToken === token);
+
+      if (!room || !existing) {
+        send(ws, { type: 'error', message: 'Reconnect session expired. Please create or join a new room.' });
+        return;
+      }
+
+      player = {
+        ws,
+        name: String(message.playerName || existing.name).trim().slice(0, 20) || existing.name,
+        color: existing.color,
+        reconnectToken: existing.reconnectToken,
+        room,
+      };
+      existing.ws = ws;
+
+      send(ws, {
+        type: 'reconnected',
+        roomCode: room.code,
+        color: player.color,
+        opponentName: room.players.find((item) => item !== existing)?.name ?? null,
+        opponentConnected: room.players.some((item) => item !== existing),
+        ...state(room),
+      });
       return;
     }
 
@@ -262,14 +299,24 @@ wss.on('connection', (ws) => {
     if (!player?.room) return;
 
     const room = player.room;
-    room.players = room.players.filter((item) => item !== player);
+    const storedPlayer = room.players.find((item) => item.reconnectToken === player.reconnectToken);
+    if (storedPlayer) {
+      storedPlayer.ws = ws;
+      storedPlayer.disconnectedAt = Date.now();
+    }
 
     broadcast(room, {
       type: 'opponent_left',
       message: 'Your opponent disconnected.',
     });
 
-    cleanup(room);
+    setTimeout(() => {
+      const current = room.players.find((item) => item.reconnectToken === player.reconnectToken);
+      if (current?.disconnectedAt && Date.now() - current.disconnectedAt >= 30000) {
+        room.players = room.players.filter((item) => item !== current);
+        cleanup(room);
+      }
+    }, 30000);
   });
 });
 
