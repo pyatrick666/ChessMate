@@ -17,20 +17,18 @@ class _AdBannerState extends State<AdBanner> {
   bool _isLoaded = false;
   bool _isLoading = false;
   Timer? _retryTimer;
+  int _retrySeconds = 10;
 
   static const String _realAdUnitId =
       'ca-app-pub-4813245225944962/2387254443';
   static const String _testAdUnitId =
       'ca-app-pub-3940256099942544/9214589741';
 
-  // Use Google's guaranteed test banner only when explicitly requested.
-  // Normal release builds continue using the real ChessMate AdMob unit.
-  // Production build: use the real ChessMate AdMob unit.
+  // Production builds always use the real ChessMate unit.
   static const bool _forceTestAds = false;
 
   String get _adUnitId =>
       (kDebugMode || _forceTestAds) ? _testAdUnitId : _realAdUnitId;
-
   bool get _usingTestAds => kDebugMode || _forceTestAds;
 
   @override
@@ -43,6 +41,7 @@ class _AdBannerState extends State<AdBanner> {
 
   Future<void> _loadBanner() async {
     if (_isLoading || !mounted) return;
+
     _isLoading = true;
     _retryTimer?.cancel();
 
@@ -65,15 +64,21 @@ class _AdBannerState extends State<AdBanner> {
       size: size,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          debugPrint(
-            'ChessMate banner loaded (${_usingTestAds ? 'TEST' : 'LIVE'}): '
-            '${ad.responseInfo}',
-          );
           _isLoading = false;
+          _retrySeconds = 10;
+
+          debugPrint(
+            'ChessMate banner loaded (' +
+            (_usingTestAds ? 'TEST' : 'LIVE') +
+            '): ' +
+            ad.responseInfo.toString(),
+          );
+
           if (!mounted) {
             ad.dispose();
             return;
           }
+
           setState(() {
             _bannerAd = ad as BannerAd;
             _adSize = size;
@@ -82,16 +87,17 @@ class _AdBannerState extends State<AdBanner> {
         },
         onAdFailedToLoad: (ad, error) {
           debugPrint(
-            'ChessMate banner failed '
-            '(${_usingTestAds ? 'TEST' : 'LIVE'}): $error',
+            'ChessMate banner failed (' +
+            (_usingTestAds ? 'TEST' : 'LIVE') +
+            '): ' +
+            error.toString(),
           );
+
           ad.dispose();
           _bannerAd = null;
           _isLoaded = false;
           _isLoading = false;
-          if (mounted) {
-            _retryTimer = Timer(const Duration(seconds: 10), _loadBanner);
-          }
+          _scheduleRetry();
         },
         onAdImpression: (_) {
           debugPrint('ChessMate banner impression recorded.');
@@ -106,6 +112,14 @@ class _AdBannerState extends State<AdBanner> {
     await banner.load();
   }
 
+  void _scheduleRetry() {
+    _retryTimer?.cancel();
+
+    final delay = _retrySeconds;
+    _retrySeconds = (_retrySeconds * 2).clamp(10, 300);
+    _retryTimer = Timer(Duration(seconds: delay), _loadBanner);
+  }
+
   @override
   void dispose() {
     _retryTimer?.cancel();
@@ -117,9 +131,11 @@ class _AdBannerState extends State<AdBanner> {
   Widget build(BuildContext context) {
     final ad = _bannerAd;
     final size = _adSize;
+
     if (!_isLoaded || ad == null || size == null) {
       return const SizedBox.shrink();
     }
+
     return SizedBox(
       width: size.width.toDouble(),
       height: size.height.toDouble(),
