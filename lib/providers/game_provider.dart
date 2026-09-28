@@ -120,30 +120,69 @@ class GameProvider extends ChangeNotifier {
   Future<void> _makeAiMove() async {
     _thinking = true;
     notifyListeners();
-    await Future<void>.delayed(const Duration(milliseconds: 180));
-    final depth = switch (settings.settings.difficulty) {
-      Difficulty.easy => 1,
-      Difficulty.medium => 2,
-      Difficulty.hard => 3,
-    };
-    final ai = ChessAi(depth: depth);
-    final move = ai.findBestMove(_game);
-    if (move != null && !_game.game_over) {
-      final from = move.fromAlgebraic;
-      final to = move.toAlgebraic;
-      final success = _game.move(move);
-      if (success) {
-        _moveCounter++;
-        _history.add(MoveRecord(
-          number: _moveCounter,
-          san: (_game.san_moves().last ?? ''),
-          from: from,
-          to: to,
-        ));
+
+    try {
+      // Give Flutter a frame to update the UI before calculating.
+      await Future<void>.delayed(const Duration(milliseconds: 180));
+
+      if (_game.game_over || settings.settings.mode != GameMode.humanVsAi) {
+        return;
       }
+
+      final depth = switch (settings.settings.difficulty) {
+        Difficulty.easy => 1,
+        Difficulty.medium => 2,
+        Difficulty.hard => 3,
+      };
+
+      Move? move;
+
+      try {
+        final ai = ChessAi(depth: depth);
+        move = ai.findBestMove(_game);
+      } catch (error, stackTrace) {
+        debugPrint('ChessMate AI error: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
+
+      // Always keep the game playable if the search encounters an
+      // unexpected runtime error. A legal move is safer than leaving the
+      // game permanently stuck on "Computer is thinking…".
+      if (move == null && !_game.game_over) {
+        final legalMoves = _game.generate_moves();
+        if (legalMoves.isNotEmpty) {
+          move = legalMoves.first;
+          debugPrint('ChessMate AI fallback move used.');
+        }
+      }
+
+      if (move != null && !_game.game_over && _game.turn == Color.BLACK) {
+        final from = move.fromAlgebraic;
+        final to = move.toAlgebraic;
+        final success = _game.move(move);
+
+        if (success) {
+          final sanMoves = _game.san_moves();
+          final san = sanMoves.isNotEmpty ? (sanMoves.last ?? '') : '';
+
+          if (san.isNotEmpty) {
+            _moveCounter++;
+            _history.add(
+              MoveRecord(
+                number: _moveCounter,
+                san: san,
+                from: from,
+                to: to,
+              ),
+            );
+          }
+        }
+      }
+    } finally {
+      // This must always run, even if the AI throws an exception.
+      _thinking = false;
+      notifyListeners();
     }
-    _thinking = false;
-    notifyListeners();
   }
 
   void resign() {
