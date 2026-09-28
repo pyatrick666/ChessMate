@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../widgets/ad_banner.dart';
@@ -21,6 +19,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   final _joinController = TextEditingController();
   bool _creating = false;
   bool _joining = false;
+  String _connectionMessage = 'Connecting to ChessMate server…';
   late final OnlineGameProvider _online;
 
   void _openOnlineGame() {
@@ -52,7 +51,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     final name = _nameController.text.trim().isEmpty
         ? 'White'
         : _nameController.text.trim();
-    setState(() => _creating = true);
+    setState(() {
+      _creating = true;
+      _connectionMessage = 'Connecting / waking server…';
+    });
     try {
       await _connectToServer();
       _online.createRoom(name);
@@ -80,7 +82,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     final name = _nameController.text.trim().isEmpty
         ? 'Black'
         : _nameController.text.trim();
-    setState(() => _joining = true);
+    setState(() {
+      _joining = true;
+      _connectionMessage = 'Connecting / waking server…';
+    });
     try {
       await _connectToServer();
       _online.joinRoom(code, name);
@@ -114,8 +119,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         title: const Text('Online Multiplayer'),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: ListView(
+      body: Stack(
+        children: [
+          SafeArea(
+            child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
             Icon(
@@ -284,7 +291,47 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
               ),
             ),
           ],
-        ),
+            ),
+          ),
+          if (_creating || _joining)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black54,
+                child: Center(
+                  child: Card(
+                    margin: const EdgeInsets.all(28),
+                    child: Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 42,
+                            height: 42,
+                            child: CircularProgressIndicator(),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            _connectionMessage,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Render may take a few seconds to wake after inactivity. Please keep this screen open.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
