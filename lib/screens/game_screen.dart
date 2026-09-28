@@ -35,19 +35,11 @@ class _GameScreenState extends State<GameScreen> {
     if (!_game.isGameOver || _gameOverDialogShown || !mounted) return;
     _gameOverDialogShown = true;
 
-    void showResult() {
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _showGameOverDialog();
-      });
-    }
-
-    if (!_gameOverAdShown) {
-      _gameOverAdShown = true;
-      _interstitial.show(onDismissed: showResult);
-    } else {
-      showResult();
-    }
+    // Never make the game-over UI depend on an ad callback.
+    // A delayed/failed ad must not prevent the result dialog from appearing.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _showGameOverDialog();
+    });
   }
 
   void _showGameOverDialog() {
@@ -74,6 +66,14 @@ class _GameScreenState extends State<GameScreen> {
                 _gameOverAdShown = false;
                 _game.newGame();
                 _interstitial.load();
+                // Show an interstitial only after the result dialog has
+                // already been dismissed and the new game is responsive.
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && !_gameOverAdShown) {
+                    _gameOverAdShown = true;
+                    _interstitial.show();
+                  }
+                });
               },
               icon: const Icon(Icons.refresh),
               label: const Text('Play Again'),
