@@ -47,9 +47,8 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Build release APK
-        working-directory: android
-        run: gradle assembleRelease --no-daemon
+      - name: Build release APK (ARM64 only)
+        run: flutter build apk --release --target-platform android-arm64
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
