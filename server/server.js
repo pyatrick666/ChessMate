@@ -237,6 +237,7 @@ wss.on('connection', (ws) => {
 
     broadcast(room, {
       type: 'opponent_left',
+      message: 'Your opponent disconnected.',
     });
 
     cleanup(room);
