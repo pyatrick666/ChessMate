@@ -150,12 +150,9 @@ class GameProvider extends ChangeNotifier {
 
   int _thinkingTimeForDifficulty() {
     return switch (settings.settings.difficulty) {
-      // Still much stronger than the old depth-1 search.
-      Difficulty.easy => 1200,
-      // Strong default play without making the player wait too long.
-      Difficulty.medium => 3000,
-      // Full-strength Stockfish with a longer search window.
-      Difficulty.hard => 7000,
+      Difficulty.easy => 1500,
+      Difficulty.medium => 4000,
+      Difficulty.hard => 10000,
     };
   }
 
@@ -163,12 +160,24 @@ class GameProvider extends ChangeNotifier {
     if (uci.length < 4) return null;
     final from = uci.substring(0, 2);
     final to = uci.substring(2, 4);
+    final promotionCode = uci.length >= 5 ? uci[4].toLowerCase() : null;
 
     final legalMoves = _game.generate_moves();
     for (final move in legalMoves) {
-      if (move.fromAlgebraic == from && move.toAlgebraic == to) {
-        return move;
+      if (move.fromAlgebraic != from || move.toAlgebraic != to) continue;
+
+      // UCI promotion moves end in q/r/b/n. Match the suffix so Stockfish
+      // cannot accidentally select the wrong promotion among four legal moves.
+      if (promotionCode != null) {
+        final promotion = move.promotion;
+        if (promotion == null || promotion.toLowerCase() != promotionCode) {
+          continue;
+        }
+      } else if (move.promotion != null) {
+        continue;
       }
+
+      return move;
     }
     return null;
   }
