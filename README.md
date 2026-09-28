@@ -153,3 +153,31 @@ ChessMate is my project, and this repository contains the source code and implem
 ---
 
 **ChessMate ♟️ — Built with Flutter, Dart, algorithms, and a passion for chess.**
+
+## Online Multiplayer Server
+
+ChessMate now includes a standalone WebSocket server under `server/`.
+
+### Run locally
+
+```bash
+cd server
+npm install
+npm start
+```
+
+The server listens on port `8080` by default. Set `PORT` to use another port.
+
+The server is authoritative for:
+- room creation and joining
+- White/Black assignment
+- legal move validation
+- turn enforcement
+- FEN/game state
+- checkmate/stalemate/draw state
+- resignation events
+- draw offers
+- rematches
+- disconnect notifications
+
+For production, deploy the `server/` directory to a WebSocket-capable Node.js host and use its `wss://` endpoint in the ChessMate online lobby.
