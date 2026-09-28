@@ -20,17 +20,21 @@ class GameProvider extends ChangeNotifier {
   Set<String> _legalTargets = {};
   bool _thinking = false;
   int _moveCounter = 0;
+  Color? _resignedBy;
 
   Chess get game => _game;
   List<MoveRecord> get history => List.unmodifiable(_history);
   String? get selectedSquare => _selectedSquare;
   Set<String> get legalTargets => _legalTargets;
   bool get thinking => _thinking;
-  bool get isGameOver => _game.game_over;
+  bool get isGameOver => _game.game_over || _resignedBy != null;
   bool get isHumanTurn =>
       settings.settings.mode == GameMode.humanVsHuman || _game.turn == Color.WHITE;
 
   String get status {
+    if (_resignedBy != null) {
+      return _resignedBy == Color.WHITE ? 'White resigned — Black wins' : 'Black resigned — White wins';
+    }
     if (_game.in_checkmate) {
       return _game.turn == Color.WHITE ? 'Checkmate — Black wins' : 'Checkmate — White wins';
     }
@@ -55,6 +59,7 @@ class GameProvider extends ChangeNotifier {
     _legalTargets = {};
     _thinking = false;
     _moveCounter = 0;
+    _resignedBy = null;
   }
 
   List<Move> movesFor(String square) {
@@ -62,7 +67,7 @@ class GameProvider extends ChangeNotifier {
   }
 
   void selectSquare(String square) {
-    if (_thinking || _game.game_over || !isHumanTurn) return;
+    if (_thinking || isGameOver || !isHumanTurn) return;
     final piece = _game.get(square);
     if (_selectedSquare == null) {
       if (piece == null || piece.color != _game.turn) return;
@@ -91,7 +96,7 @@ class GameProvider extends ChangeNotifier {
   }
 
   void playMove(Move move) {
-    if (_thinking || _game.game_over) return;
+    if (_thinking || isGameOver) return;
     final from = move.fromAlgebraic;
     final to = move.toAlgebraic;
     final success = _game.move(move);
@@ -135,6 +140,14 @@ class GameProvider extends ChangeNotifier {
       }
     }
     _thinking = false;
+    notifyListeners();
+  }
+
+  void resign() {
+    if (_thinking || isGameOver) return;
+    _resignedBy = _game.turn;
+    _selectedSquare = null;
+    _legalTargets = {};
     notifyListeners();
   }
 
