@@ -8,12 +8,17 @@ import '../widgets/ad_banner.dart';
 import 'game_screen.dart';
 import 'how_to_play_screen.dart';
 import 'settings_screen.dart';
+import 'online_lobby_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   String _modeLabel(GameMode mode) {
-    return mode == GameMode.humanVsAi ? 'Vs AI' : '2 Players';
+    return switch (mode) {
+      GameMode.humanVsAi => 'Vs AI',
+      GameMode.humanVsHuman => '2 Players',
+      GameMode.online => 'Online',
+    };
   }
 
   String _difficultyLabel(Difficulty difficulty) {
@@ -134,7 +139,12 @@ class HomeScreen extends StatelessWidget {
                     ButtonSegment<GameMode>(
                       value: GameMode.humanVsHuman,
                       icon: Icon(Icons.people_outline),
-                      label: Text('2 Players'),
+                      label: Text('Local'),
+                    ),
+                    ButtonSegment<GameMode>(
+                      value: GameMode.online,
+                      icon: Icon(Icons.public),
+                      label: Text('Online'),
                     ),
                   ],
                   selected: {gameSettings.mode},
@@ -172,18 +182,35 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 26),
                 FilledButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const GameScreen(),
-                    ),
+                  onPressed: () {
+                    if (gameSettings.mode == GameMode.online) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const OnlineLobbyScreen(),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const GameScreen(),
+                        ),
+                      );
+                    }
+                  },
+                  icon: Icon(
+                    gameSettings.mode == GameMode.online
+                        ? Icons.public
+                        : Icons.play_arrow_rounded,
                   ),
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
+                  label: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Text(
-                      'Start Game',
-                      style: TextStyle(fontSize: 16),
+                      gameSettings.mode == GameMode.online
+                          ? 'Online Lobby'
+                          : 'Start Game',
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
