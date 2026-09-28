@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../widgets/ad_banner.dart';
+
 class OnlineLobbyScreen extends StatefulWidget {
   const OnlineLobbyScreen({super.key});
 
@@ -198,6 +200,8 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 18),
+            const Center(child: AdBanner()),
             const SizedBox(height: 18),
             Card(
               color: theme.colorScheme.surfaceContainerHighest,
