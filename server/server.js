@@ -3,7 +3,21 @@ import { WebSocketServer } from 'ws';
 import { Chess } from 'chess.js';
 
 const PORT = Number(process.env.PORT || 8080);
-const wss = new WebSocketServer({ port: PORT });
+const wss = new WebSocketServer({ server: httpServer });
+
+// Render, Railway, Fly.io and similar hosts can use this HTTP endpoint
+// when the WebSocket server is exposed behind a health check.
+import { createServer } from 'node:http';
+const httpServer = createServer((req, res) => {
+  if (req.url === '/health') {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', service: 'chessmate-online' }));
+    return;
+  }
+  res.writeHead(404);
+  res.end();
+});
+
 
 const rooms = new Map();
 
@@ -47,6 +61,10 @@ function cleanup(room) {
     rooms.delete(room.code);
   }
 }
+
+httpServer.listen(PORT, () => {
+  console.log(`ChessMate multiplayer server listening on port ${PORT}`);
+});
 
 wss.on('connection', (ws) => {
   let player = null;
@@ -244,4 +262,3 @@ wss.on('connection', (ws) => {
   });
 });
 
-console.log(`ChessMate multiplayer server listening on port ${PORT}`);
