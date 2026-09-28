@@ -237,6 +237,7 @@ class _GameScreenState extends State<GameScreen> {
                               piece: '♚',
                               active: !game.isGameOver && !turnIsWhite,
                               isBlack: true,
+                              clockSeconds: game.blackSeconds,
                             ),
                             const SizedBox(height: 10),
                             Container(
@@ -258,6 +259,7 @@ class _GameScreenState extends State<GameScreen> {
                               piece: '♔',
                               active: !game.isGameOver && turnIsWhite,
                               isBlack: false,
+                              clockSeconds: game.whiteSeconds,
                             ),
                             const SizedBox(height: 12),
                             Container(
@@ -322,12 +324,14 @@ class _PlayerCard extends StatelessWidget {
     required this.piece,
     required this.active,
     required this.isBlack,
+    required this.clockSeconds,
   });
 
   final String name;
   final String piece;
   final bool active;
   final bool isBlack;
+  final int clockSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -369,15 +373,22 @@ class _PlayerCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          if (active)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.circle, size: 9, color: primary),
-                const SizedBox(width: 5),
-                const Text('Your turn'),
-              ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: active ? Colors.white : Colors.black.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: Text(
+              '${(clockSeconds ~/ 60).toString().padLeft(2, '0')}:${(clockSeconds % 60).toString().padLeft(2, '0')}',
+              style: TextStyle(
+                fontFeatures: const [FontFeature.tabularFigures()],
+                fontWeight: FontWeight.w800,
+                fontSize: 17,
+                color: active ? Colors.black87 : theme.colorScheme.onSurface,
+              ),
+            ),
+          ),
         ],
       ),
     );
