@@ -13,6 +13,7 @@ dependencies:
   provider: ^6.1.5+1
   chess: ^0.8.1
   google_mobile_ads: ^9.1.0
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:
