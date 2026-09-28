@@ -7,6 +7,7 @@ import '../models/game_settings.dart';
 import '../providers/game_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/chess_board.dart';
+import '../widgets/ad_banner.dart';
 import '../widgets/interstitial_ad_manager.dart';
 
 class GameScreen extends StatefulWidget {
@@ -278,6 +279,8 @@ class _GameScreenState extends State<GameScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
+                            const AdBanner(),
+                            const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
