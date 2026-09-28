@@ -1,4 +1,4 @@
-enum GameMode { humanVsAi, humanVsHuman }
+enum GameMode { humanVsAi, humanVsHuman, online }
 enum Difficulty { easy, medium, hard }
 
 enum BoardOrientation { white, black }
