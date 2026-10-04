@@ -44,9 +44,8 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showGameOverDialog() {
-    final status = _game.status;
-    final isCheckmate = _game.game.in_checkmate;
-    final title = isCheckmate ? 'CHECKMATE!' : 'GAME OVER';
+    final title = _game.gameOverTitle;
+    final message = _game.gameOverMessage;
 
     showDialog<void>(
       context: context,
@@ -56,7 +55,7 @@ class _GameScreenState extends State<GameScreen> {
         child: AlertDialog(
           title: Text(title, textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.bold)),
-          content: Text(status, textAlign: TextAlign.center,
+          content: Text(message, textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 17)),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
