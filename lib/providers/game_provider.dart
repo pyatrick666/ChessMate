@@ -43,13 +43,19 @@ class GameProvider extends ChangeNotifier {
 
   String get status {
     if (_timedOutBy != null) {
-      return _timedOutBy == Color.WHITE ? 'Time expired — Black wins' : 'Time expired — White wins';
+      return _timedOutBy == Color.WHITE
+          ? 'Time expired — Black wins'
+          : 'Time expired — White wins';
     }
     if (_resignedBy != null) {
-      return _resignedBy == Color.WHITE ? 'White resigned — Black wins' : 'Black resigned — White wins';
+      return _resignedBy == Color.WHITE
+          ? 'White resigned — Black wins'
+          : 'Black resigned — White wins';
     }
     if (_game.in_checkmate) {
-      return _game.turn == Color.WHITE ? 'Checkmate — Black wins' : 'Checkmate — White wins';
+      return _game.turn == Color.WHITE
+          ? 'Checkmate — Black wins'
+          : 'Checkmate — White wins';
     }
     if (_game.in_stalemate) return 'Draw — stalemate';
     if (_game.insufficient_material) return 'Draw — insufficient material';
@@ -60,6 +66,42 @@ class GameProvider extends ChangeNotifier {
     }
     if (_thinking) return 'Master AI is thinking…';
     return '${_game.turn == Color.WHITE ? 'White' : 'Black'} to move';
+  }
+
+  String get gameOverTitle {
+    if (_timedOutBy != null) return 'TIME’S UP!';
+    if (_resignedBy != null) return 'GAME OVER';
+    if (_game.in_checkmate) return 'CHECKMATE!';
+    return 'DRAW GAME';
+  }
+
+  String get gameOverMessage {
+    if (_timedOutBy != null) {
+      final winner = _timedOutBy == Color.WHITE ? 'Black' : 'White';
+      return '$winner wins on time. Great game!';
+    }
+
+    if (_resignedBy != null) {
+      final winner = _resignedBy == Color.WHITE ? 'Black' : 'White';
+      final loser = _resignedBy == Color.WHITE ? 'White' : 'Black';
+      return '$winner wins — $loser resigned.';
+    }
+
+    if (_game.in_checkmate) {
+      final winner = _game.turn == Color.WHITE ? 'Black' : 'White';
+      return '$winner wins by checkmate! Brilliant game!';
+    }
+
+    if (_game.in_stalemate) {
+      return 'It’s a stalemate. Nobody wins this one.';
+    }
+    if (_game.insufficient_material) {
+      return 'Draw — there is not enough material to checkmate.';
+    }
+    if (_game.in_threefold_repetition) {
+      return 'Draw — the same position occurred three times.';
+    }
+    return 'It’s a draw. Well played by both sides!';
   }
 
   void newGame() {
@@ -149,10 +191,12 @@ class GameProvider extends ChangeNotifier {
   }
 
   int _thinkingTimeForDifficulty() {
+    // Keep the AI responsive on phones while still giving harder levels
+    // more time to calculate a stronger move.
     return switch (settings.settings.difficulty) {
-      Difficulty.easy => 1500,
-      Difficulty.medium => 4000,
-      Difficulty.hard => 10000,
+      Difficulty.easy => 800,
+      Difficulty.medium => 1600,
+      Difficulty.hard => 2800,
     };
   }
 
