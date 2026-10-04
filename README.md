@@ -54,16 +54,6 @@ Features include:
 - Responsive online lobby
 - Loading/wake-up screen for the online server
 
-### 📢 Advertising
-
-ChessMate integrates Google AdMob with:
-
-- Banner ads
-- Interstitial ads
-- App Open ads
-- User consent management
-- Privacy options
-- Debug/test ad support
 
 ---
 
