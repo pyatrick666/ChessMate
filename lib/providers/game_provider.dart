@@ -26,6 +26,7 @@ class GameProvider extends ChangeNotifier {
   int _aiGeneration = 0;
   Color? _resignedBy;
   Color? _timedOutBy;
+  Color? _winner;
   Timer? _clockTimer;
   int _whiteSeconds = 10 * 60;
   int _blackSeconds = 10 * 60;
@@ -36,6 +37,7 @@ class GameProvider extends ChangeNotifier {
   Set<String> get legalTargets => _legalTargets;
   bool get thinking => _thinking;
   bool get isGameOver => _game.game_over || _resignedBy != null || _timedOutBy != null;
+  Color? get winner => _winner;
   int get whiteSeconds => _whiteSeconds;
   int get blackSeconds => _blackSeconds;
   bool get isHumanTurn =>
@@ -69,26 +71,48 @@ class GameProvider extends ChangeNotifier {
   }
 
   String get gameOverTitle {
-    if (_timedOutBy != null) return 'TIME’S UP!';
-    if (_resignedBy != null) return 'GAME OVER';
-    if (_game.in_checkmate) return 'CHECKMATE!';
+    if (_timedOutBy != null) {
+      return settings.settings.mode == GameMode.humanVsAi
+          ? (_winner == Color.WHITE ? 'YOU WIN!' : 'YOU LOSE')
+          : 'TIME’S UP!';
+    }
+    if (_resignedBy != null) {
+      return settings.settings.mode == GameMode.humanVsAi
+          ? (_winner == Color.WHITE ? 'YOU WIN!' : 'YOU LOSE')
+          : 'GAME OVER';
+    }
+    if (_game.in_checkmate && _winner != null) {
+      return settings.settings.mode == GameMode.humanVsAi
+          ? (_winner == Color.WHITE ? 'YOU WIN! 🎉' : 'YOU LOSE')
+          : 'CHECKMATE!';
+    }
     return 'DRAW GAME';
   }
 
   String get gameOverMessage {
     if (_timedOutBy != null) {
-      final winner = _timedOutBy == Color.WHITE ? 'Black' : 'White';
+      final winner = _winner == Color.WHITE ? 'White' : 'Black';
+      if (settings.settings.mode == GameMode.humanVsAi) {
+        return _winner == Color.WHITE ? 'YOU WIN! The Computer ran out of time.' : 'YOU LOSE. You ran out of time.';
+      }
       return '$winner wins on time. Great game!';
     }
 
     if (_resignedBy != null) {
-      final winner = _resignedBy == Color.WHITE ? 'Black' : 'White';
+      final winner = _winner == Color.WHITE ? 'White' : 'Black';
       final loser = _resignedBy == Color.WHITE ? 'White' : 'Black';
-      return '$winner wins — $loser resigned.';
+      return settings.settings.mode == GameMode.humanVsAi
+          ? (_winner == Color.WHITE ? 'YOU WIN! The Computer resigned. Great game!' : 'YOU LOSE. The Computer wins because you resigned.')
+          : '$winner wins — $loser resigned.';
     }
 
-    if (_game.in_checkmate) {
-      final winner = _game.turn == Color.WHITE ? 'Black' : 'White';
+    if (_game.in_checkmate && _winner != null) {
+      final winner = _winner == Color.WHITE ? 'White' : 'Black';
+      final playerWon = settings.settings.mode == GameMode.humanVsAi
+          ? _winner == Color.WHITE
+          : null;
+      if (playerWon == true) return 'YOU WIN! $winner wins by checkmate. Brilliant game!';
+      if (playerWon == false) return 'YOU LOSE. $winner wins by checkmate. Keep playing!';
       return '$winner wins by checkmate! Brilliant game!';
     }
 
@@ -119,6 +143,7 @@ class GameProvider extends ChangeNotifier {
     _moveCounter = 0;
     _resignedBy = null;
     _timedOutBy = null;
+    _winner = null;
     _whiteSeconds = 10 * 60;
     _blackSeconds = 10 * 60;
   }
@@ -128,10 +153,16 @@ class GameProvider extends ChangeNotifier {
     if (settings.settings.mode == GameMode.online) return;
     if (_game.turn == Color.WHITE) {
       if (_whiteSeconds > 0) _whiteSeconds--;
-      if (_whiteSeconds == 0) _timedOutBy = Color.WHITE;
+      if (_whiteSeconds == 0) {
+        _timedOutBy = Color.WHITE;
+        _winner = Color.BLACK;
+      }
     } else {
       if (_blackSeconds > 0) _blackSeconds--;
-      if (_blackSeconds == 0) _timedOutBy = Color.BLACK;
+      if (_blackSeconds == 0) {
+        _timedOutBy = Color.BLACK;
+        _winner = Color.WHITE;
+      }
     }
     notifyListeners();
   }
@@ -179,6 +210,9 @@ class GameProvider extends ChangeNotifier {
     if (san.isEmpty) return;
     _moveCounter++;
     _history.add(MoveRecord(number: _moveCounter, san: san, from: from, to: to));
+    if (_game.in_checkmate) {
+      _winner = _game.turn == Color.WHITE ? Color.BLACK : Color.WHITE;
+    }
     _selectedSquare = null;
     _legalTargets = {};
     notifyListeners();
@@ -276,6 +310,9 @@ class GameProvider extends ChangeNotifier {
           final san = sanMoves.isNotEmpty ? (sanMoves.last ?? '') : '';
 
           if (san.isNotEmpty) {
+            if (_game.in_checkmate) {
+              _winner = _game.turn == Color.WHITE ? Color.BLACK : Color.WHITE;
+            }
             _moveCounter++;
             _history.add(
               MoveRecord(
