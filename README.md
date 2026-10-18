@@ -150,12 +150,7 @@ http://localhost:8080/health
 
 The mobile app must be configured to use the WebSocket URL for the server you want to test. The production multiplayer service is hosted on Render; free hosting may take time to wake after inactivity.
 
-## 🔁 Continuous Integration and Releases
 
-The GitHub Actions workflow in `.github/workflows/build-apk.yml` runs on pushes to `main` and can also be started manually. It installs the required toolchains and dependencies, runs Flutter analysis and tests, builds an ARM64 release APK, uploads the APK artifact, and publishes a GitHub release.
-
-- [Latest release](https://github.com/pyatrick666/ChessMate/releases/latest)
-- [Build workflow and run history](https://github.com/pyatrick666/ChessMate/actions/workflows/build-apk.yml)
 
 ## 🗂️ Project Structure
 
@@ -190,8 +185,8 @@ Ideas for future development include:
 **Pratik Poudel**
 
 - GitHub: [@pyatrick666](https://github.com/pyatrick666)
-- Repository: [ChessMate](https://github.com/pyatrick666/ChessMate)
 
-## ♟️ Play. Practise. Compete.
+
+## ♟️ Play. Practice. Compete.
 
 Built with Flutter and Dart.
