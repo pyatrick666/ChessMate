@@ -8,7 +8,7 @@
 
 ## 🎮 Game Modes
 
-- **Play vs AI** — choose Easy, Medium, or Hard difficulty and practise against the computer.
+- **Play vs AI** — choose Easy, Medium, or Hard difficulty and practice against the computer.
 - **Local 2-player** — share one device for a face-to-face match.
 - **Online multiplayer** — create a room or join a room code to play with another person over the internet.
 
