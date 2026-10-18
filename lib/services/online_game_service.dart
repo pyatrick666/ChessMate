@@ -14,9 +14,7 @@ class OnlineGameService {
   Stream<Map<String, dynamic>> get events => _events.stream;
   bool get isConnected => _channel != null;
 
-  Future<void> connect({
-    required Uri serverUri,
-  }) async {
+  Future<void> connect({required Uri serverUri}) async {
     await disconnect();
 
     _channel = WebSocketChannel.connect(serverUri);
@@ -37,10 +35,7 @@ class OnlineGameService {
         }
       },
       onError: (Object error) {
-        _events.add({
-          'type': 'error',
-          'message': error.toString(),
-        });
+        _events.add({'type': 'error', 'message': error.toString()});
       },
       onDone: () {
         _events.add({'type': 'disconnected'});
@@ -53,19 +48,11 @@ class OnlineGameService {
     _channel!.sink.add(jsonEncode(message));
   }
 
-  void createRoom({
-    required String playerName,
-  }) {
-    send({
-      'type': 'create_room',
-      'playerName': playerName,
-    });
+  void createRoom({required String playerName}) {
+    send({'type': 'create_room', 'playerName': playerName});
   }
 
-  void joinRoom({
-    required String roomCode,
-    required String playerName,
-  }) {
+  void joinRoom({required String roomCode, required String playerName}) {
     send({
       'type': 'join_room',
       'roomCode': roomCode,
@@ -101,32 +88,28 @@ class OnlineGameService {
     });
   }
 
+  void sendChatMessage({required String text}) {
+    send({'type': 'chat_message', 'text': text});
+  }
+
+  void sendQuickChat({required String quickId}) {
+    send({'type': 'quick_chat', 'quickId': quickId});
+  }
+
   void resign({required String roomCode}) {
-    send({
-      'type': 'resign',
-      'roomCode': roomCode,
-    });
+    send({'type': 'resign', 'roomCode': roomCode});
   }
 
   void offerDraw({required String roomCode}) {
-    send({
-      'type': 'offer_draw',
-      'roomCode': roomCode,
-    });
+    send({'type': 'offer_draw', 'roomCode': roomCode});
   }
 
   void acceptDraw({required String roomCode}) {
-    send({
-      'type': 'accept_draw',
-      'roomCode': roomCode,
-    });
+    send({'type': 'accept_draw', 'roomCode': roomCode});
   }
 
   void rematch({required String roomCode}) {
-    send({
-      'type': 'rematch',
-      'roomCode': roomCode,
-    });
+    send({'type': 'rematch', 'roomCode': roomCode});
   }
 
   Future<void> disconnect() async {
