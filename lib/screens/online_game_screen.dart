@@ -22,6 +22,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
   final TextEditingController _chatController = TextEditingController();
   final ScrollController _chatScrollController = ScrollController();
   bool _chatExpanded = false;
+  int _unreadChatCount = 0;
 
   @override
   void initState() {
@@ -39,8 +40,11 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
             content: Text(event['message']?.toString() ?? 'Server error.'),
           ),
         );
-      } else if (event['type'] == 'chat_message' && _chatExpanded) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+      } else if (event['type'] == 'chat_message') {
+        if (!_chatExpanded && event['senderColor'] != _online.playerColor) {
+          setState(() => _unreadChatCount++);
+        }
+        if (_chatExpanded) WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_chatScrollController.hasClients) {
             _chatScrollController.animateTo(
               _chatScrollController.position.maxScrollExtent,
@@ -125,197 +129,12 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
                         ),
                         const SizedBox(height: 12),
                         Card(
-                          clipBehavior: Clip.antiAlias,
-                          child: Column(
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.chat_bubble_outline),
-                                title: const Text(
-                                  'Match chat',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text(
-                                  connected
-                                      ? '${chatMessages.length} messages · only visible in this match'
-                                      : 'Chat becomes available when your opponent joins',
-                                ),
-                                trailing: Icon(
-                                  _chatExpanded
-                                      ? Icons.keyboard_arrow_up
-                                      : Icons.keyboard_arrow_down,
-                                ),
-                                onTap: () => setState(
-                                  () => _chatExpanded = !_chatExpanded,
-                                ),
-                              ),
-                              AnimatedCrossFade(
-                                firstChild: const SizedBox(width: double.infinity),
-                                secondChild: Padding(
-                                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Container(
-                                        height: 190,
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .surfaceContainerHighest
-                                              .withValues(alpha: 0.45),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: chatMessages.isEmpty
-                                            ? const Center(
-                                                child: Text(
-                                                  'Say hello to your opponent!',
-                                                ),
-                                              )
-                                            : ListView.builder(
-                                                controller: _chatScrollController,
-                                                padding: const EdgeInsets.all(10),
-                                                itemCount: chatMessages.length,
-                                                itemBuilder: (context, index) {
-                                                  final message = chatMessages[index];
-                                                  final mine = message['senderColor'] ==
-                                                      online.playerColor;
-                                                  final sender =
-                                                      message['senderName']?.toString() ??
-                                                          'Player';
-                                                  final text =
-                                                      message['text']?.toString() ?? '';
-                                                  final time = _formatTime(
-                                                    message['timestamp']?.toString(),
-                                                  );
-                                                  return Align(
-                                                    alignment: mine
-                                                        ? Alignment.centerRight
-                                                        : Alignment.centerLeft,
-                                                    child: Container(
-                                                      constraints: BoxConstraints(
-                                                        maxWidth:
-                                                            MediaQuery.sizeOf(context)
-                                                                    .width *
-                                                                0.72,
-                                                      ),
-                                                      margin: const EdgeInsets.only(
-                                                        bottom: 8,
-                                                      ),
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                        horizontal: 11,
-                                                        vertical: 8,
-                                                      ),
-                                                      decoration: BoxDecoration(
-                                                        color: mine
-                                                            ? Theme.of(context)
-                                                                .colorScheme
-                                                                .primaryContainer
-                                                            : Theme.of(context)
-                                                                .colorScheme
-                                                                .surface,
-                                                        borderRadius:
-                                                            BorderRadius.circular(12),
-                                                      ),
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            mine ? 'You' : sender,
-                                                            style: Theme.of(context)
-                                                                .textTheme
-                                                                .labelSmall
-                                                                ?.copyWith(
-                                                                  fontWeight:
-                                                                      FontWeight.bold,
-                                                                ),
-                                                          ),
-                                                          const SizedBox(height: 2),
-                                                          Text(text),
-                                                          const SizedBox(height: 2),
-                                                          Align(
-                                                            alignment:
-                                                                Alignment.bottomRight,
-                                                            child: Text(
-                                                              time,
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .labelSmall,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        'Quick messages',
-                                        style: Theme.of(context).textTheme.labelLarge,
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Wrap(
-                                        spacing: 6,
-                                        runSpacing: 6,
-                                        children: [
-                                          for (final entry
-                                              in OnlineGameProvider.quickChatOptions.entries)
-                                            ActionChip(
-                                              label: Text(entry.value),
-                                              onPressed: connected
-                                                  ? () => online.sendQuickChat(entry.key)
-                                                  : null,
-                                            ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          Expanded(
-                                            child: TextField(
-                                              controller: _chatController,
-                                              enabled: connected,
-                                              maxLength: 280,
-                                              minLines: 1,
-                                              maxLines: 3,
-                                              textCapitalization:
-                                                  TextCapitalization.sentences,
-                                              decoration: const InputDecoration(
-                                                hintText: 'Write a message…',
-                                                counterText: '',
-                                                border: OutlineInputBorder(),
-                                                isDense: true,
-                                              ),
-                                              onSubmitted: (_) => _sendChat(online),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          IconButton.filled(
-                                            tooltip: 'Send message',
-                                            onPressed: connected
-                                                ? () => _sendChat(online)
-                                                : null,
-                                            icon: const Icon(Icons.send),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Messages are limited to 280 characters. Be respectful.',
-                                        style: Theme.of(context).textTheme.bodySmall,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                crossFadeState: _chatExpanded
-                                    ? CrossFadeState.showSecond
-                                    : CrossFadeState.showFirst,
-                                duration: const Duration(milliseconds: 200),
-                              ),
-                            ],
+                          child: ListTile(
+                            leading: const Icon(Icons.chat_bubble_outline),
+                            title: const Text('Match chat', style: TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text(connected ? '${chatMessages.length} messages · only visible in this match' : 'Chat becomes available when your opponent joins'),
+                            trailing: const Icon(Icons.keyboard_arrow_up),
+                            onTap: connected ? () => _showChatSheet(online) : null,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -391,6 +210,64 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
     );
   }
 
+  Future<void> _showChatSheet(OnlineGameProvider online) async {
+    setState(() { _chatExpanded = true; _unreadChatCount = 0; });
+    await showModalBottomSheet<void>(
+      context: context, isScrollControlled: true, useSafeArea: true, showDragHandle: true,
+      builder: (sheetContext) => AnimatedBuilder(
+        animation: online,
+        builder: (context, _) {
+          final messages = online.chatMessages;
+          return Padding(
+            padding: EdgeInsets.fromLTRB(16, 4, 16, MediaQuery.viewInsetsOf(context).bottom + 16),
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.68,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Row(children: [const Icon(Icons.chat_bubble_outline), const SizedBox(width: 8), Expanded(child: Text('Match chat', style: Theme.of(context).textTheme.titleLarge)), Text('${messages.length}/100')]),
+                const SizedBox(height: 10),
+                Expanded(child: messages.isEmpty
+                  ? const Center(child: Text('Say hello to your opponent!'))
+                  : ListView.builder(
+                      controller: _chatScrollController, padding: const EdgeInsets.all(8), itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        final mine = message['senderColor'] == online.playerColor;
+                        return Align(
+                          alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+                          child: Container(
+                            constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.75),
+                            margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(color: mine ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(mine ? 'You' : (message['senderName']?.toString() ?? 'Opponent'), style: Theme.of(context).textTheme.labelSmall),
+                              Text(message['text']?.toString() ?? ''),
+                              Align(alignment: Alignment.bottomRight, child: Text(_formatTime(message['timestamp']?.toString()), style: Theme.of(context).textTheme.labelSmall)),
+                            ]),
+                          ),
+                        );
+                      },
+                    )),
+                const SizedBox(height: 8),
+                Text('Quick messages', style: Theme.of(context).textTheme.labelLarge),
+                Wrap(spacing: 6, runSpacing: 4, children: [
+                  for (final entry in OnlineGameProvider.quickChatOptions.entries)
+                    ActionChip(label: Text(entry.value), onPressed: online.opponentConnected ? () => online.sendQuickChat(entry.key) : null),
+                ]),
+                const SizedBox(height: 8),
+                Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Expanded(child: TextField(controller: _chatController, enabled: online.opponentConnected, maxLength: 280, minLines: 1, maxLines: 3, textCapitalization: TextCapitalization.sentences, decoration: const InputDecoration(hintText: 'Write a message…', counterText: '', border: OutlineInputBorder(), isDense: true), onSubmitted: (_) => _sendChat(online))),
+                  const SizedBox(width: 8),
+                  IconButton.filled(tooltip: 'Send message', onPressed: online.opponentConnected ? () => _sendChat(online) : null, icon: const Icon(Icons.send)),
+                ]),
+                Text('Up to 280 characters · history lasts for this match only.', style: Theme.of(context).textTheme.bodySmall),
+              ]),
+            ),
+          );
+        },
+      ),
+    );
+    if (mounted) setState(() => _chatExpanded = false);
+  }
   String _formatTime(String? value) {
     if (value == null) return '';
     final parsed = DateTime.tryParse(value)?.toLocal();
