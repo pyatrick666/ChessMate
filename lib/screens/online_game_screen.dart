@@ -133,7 +133,21 @@ class _OnlineGameScreenState extends State<OnlineGameScreen> {
                             leading: const Icon(Icons.chat_bubble_outline),
                             title: const Text('Match chat', style: TextStyle(fontWeight: FontWeight.bold)),
                             subtitle: Text(connected ? '${chatMessages.length} messages · only visible in this match' : 'Chat becomes available when your opponent joins'),
-                            trailing: const Icon(Icons.keyboard_arrow_up),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_unreadChatCount > 0)
+                                  CircleAvatar(
+                                    radius: 11,
+                                    child: Text(
+                                      _unreadChatCount > 9 ? '9+' : '$_unreadChatCount',
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.keyboard_arrow_up),
+                              ],
+                            ),
                             onTap: connected ? () => _showChatSheet(online) : null,
                           ),
                         ),
