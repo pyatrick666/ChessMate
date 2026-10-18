@@ -16,11 +16,18 @@ class OnlineGameProvider extends ChangeNotifier {
     _subscription = this.service.events.listen(_handleEvent);
   }
 
+  static const quickChatOptions = <String, String>{
+    'good_luck': 'Good luck!',
+    'well_played': 'Well played!',
+    'nice_move': 'Nice move!',
+    'good_game': 'Good game!',
+    'thanks': 'Thanks!',
+  };
+
   final OnlineGameService service;
   StreamSubscription<Map<String, dynamic>>? _subscription;
 
-  OnlineConnectionState _connectionState =
-      OnlineConnectionState.disconnected;
+  OnlineConnectionState _connectionState = OnlineConnectionState.disconnected;
   String? _roomCode;
   String? _playerName;
   String? _playerColor;
@@ -39,6 +46,7 @@ class OnlineGameProvider extends ChangeNotifier {
   String? _winner;
   bool _rematchRequested = false;
   bool _drawOffered = false;
+  final List<Map<String, dynamic>> _chatMessages = [];
 
   OnlineConnectionState get connectionState => _connectionState;
   String? get roomCode => _roomCode;
@@ -54,7 +62,11 @@ class OnlineGameProvider extends ChangeNotifier {
   String? get winner => _winner;
   bool get rematchRequested => _rematchRequested;
   bool get drawOffered => _drawOffered;
-  bool get isReconnecting => _reconnectTimer != null || _connectionState == OnlineConnectionState.connecting;
+  List<Map<String, dynamic>> get chatMessages =>
+      List<Map<String, dynamic>>.unmodifiable(_chatMessages);
+  bool get isReconnecting =>
+      _reconnectTimer != null ||
+      _connectionState == OnlineConnectionState.connecting;
 
   Future<void> connect(Uri serverUri) async {
     _serverUri = serverUri;
@@ -74,13 +86,13 @@ class OnlineGameProvider extends ChangeNotifier {
       _errorMessage = error.toString();
       _scheduleReconnect();
     }
-
     notifyListeners();
   }
 
   void createRoom(String playerName) {
     _playerName = playerName.trim();
     _errorMessage = null;
+    _chatMessages.clear();
     service.createRoom(playerName: _playerName!);
     notifyListeners();
   }
@@ -88,6 +100,7 @@ class OnlineGameProvider extends ChangeNotifier {
   void joinRoom(String roomCode, String playerName) {
     _playerName = playerName.trim();
     _errorMessage = null;
+    _chatMessages.clear();
     service.joinRoom(
       roomCode: roomCode.trim().toUpperCase(),
       playerName: _playerName!,
@@ -102,7 +115,6 @@ class OnlineGameProvider extends ChangeNotifier {
   }) {
     final code = _roomCode;
     if (code == null) return;
-
     service.sendMove(
       roomCode: code,
       from: from,
@@ -111,32 +123,44 @@ class OnlineGameProvider extends ChangeNotifier {
     );
   }
 
+  void sendChatMessage(String rawText) {
+    final text = rawText.trim();
+    if (_roomCode == null ||
+        !_opponentConnected ||
+        text.isEmpty ||
+        text.length > 280) {
+      return;
+    }
+    service.sendChatMessage(text: text);
+  }
+
+  void sendQuickChat(String quickId) {
+    if (_roomCode == null ||
+        !_opponentConnected ||
+        !quickChatOptions.containsKey(quickId)) {
+      return;
+    }
+    service.sendQuickChat(quickId: quickId);
+  }
+
   void resign() {
     final code = _roomCode;
-    if (code != null) {
-      service.resign(roomCode: code);
-    }
+    if (code != null) service.resign(roomCode: code);
   }
 
   void offerDraw() {
     final code = _roomCode;
-    if (code != null) {
-      service.offerDraw(roomCode: code);
-    }
+    if (code != null) service.offerDraw(roomCode: code);
   }
 
   void acceptDraw() {
     final code = _roomCode;
-    if (code != null) {
-      service.acceptDraw(roomCode: code);
-    }
+    if (code != null) service.acceptDraw(roomCode: code);
   }
 
   void rematch() {
     final code = _roomCode;
-    if (code != null) {
-      service.rematch(roomCode: code);
-    }
+    if (code != null) service.rematch(roomCode: code);
   }
 
   Future<void> reconnect(Uri serverUri) async {
@@ -151,11 +175,16 @@ class OnlineGameProvider extends ChangeNotifier {
   }
 
   void _scheduleReconnect() {
-    if (_manualDisconnect || _serverUri == null || _roomCode == null || _playerName == null || _reconnectToken == null) {
+    if (_manualDisconnect ||
+        _serverUri == null ||
+        _roomCode == null ||
+        _playerName == null ||
+        _reconnectToken == null) {
       return;
     }
     _reconnectTimer?.cancel();
-    final delay = Duration(seconds: (2 << _reconnectAttempt).clamp(2, 30) as int);
+    final delay =
+        Duration(seconds: (2 << _reconnectAttempt).clamp(2, 30) as int);
     _reconnectAttempt = (_reconnectAttempt + 1).clamp(0, 4);
     _reconnectTimer = Timer(delay, () async {
       _reconnectTimer = null;
@@ -183,11 +212,17 @@ class OnlineGameProvider extends ChangeNotifier {
                 : event['draw'] == true
                     ? 'draw'
                     : null;
+        if (type == 'rematch_started') {
+          _chatMessages.clear();
+          _drawOffered = false;
+          _rematchRequested = false;
+        }
         break;
       case 'room_created':
         _roomCode = event['roomCode'] as String?;
         _playerColor = event['color'] as String?;
-        _reconnectToken = event['reconnectToken'] as String? ?? _reconnectToken;
+        _reconnectToken =
+            event['reconnectToken'] as String? ?? _reconnectToken;
         _fen = event['fen'] as String?;
         _gameStatus = null;
         _winner = null;
@@ -196,7 +231,8 @@ class OnlineGameProvider extends ChangeNotifier {
       case 'room_joined':
         _roomCode = event['roomCode'] as String?;
         _playerColor = event['color'] as String?;
-        _reconnectToken = event['reconnectToken'] as String? ?? _reconnectToken;
+        _reconnectToken =
+            event['reconnectToken'] as String? ?? _reconnectToken;
         _opponentName = event['opponentName'] as String?;
         _fen = event['fen'] as String?;
         _gameStatus = null;
@@ -209,6 +245,22 @@ class OnlineGameProvider extends ChangeNotifier {
         break;
       case 'opponent_left':
         _opponentConnected = false;
+        break;
+      case 'chat_history':
+        _chatMessages
+          ..clear()
+          ..addAll(
+            (event['messages'] as List<dynamic>? ?? const [])
+                .whereType<Map<String, dynamic>>()
+                .take(100),
+          );
+        break;
+      case 'chat_message':
+        final id = event['id'];
+        if (id is String && !_chatMessages.any((item) => item['id'] == id)) {
+          _chatMessages.add(Map<String, dynamic>.from(event));
+          if (_chatMessages.length > 100) _chatMessages.removeAt(0);
+        }
         break;
       case 'resigned':
         final resigned = event['color']?.toString();
@@ -233,6 +285,8 @@ class OnlineGameProvider extends ChangeNotifier {
         break;
       case 'reconnected':
         _connectionState = OnlineConnectionState.connected;
+        _playerColor = event['color'] as String? ?? _playerColor;
+        _opponentName = event['opponentName'] as String? ?? _opponentName;
         _opponentConnected = event['opponentConnected'] == true;
         _fen = event['fen'] as String? ?? _fen;
         _errorMessage = null;
