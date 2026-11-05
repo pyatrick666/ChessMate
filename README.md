@@ -1,4 +1,4 @@
-# ♟️ ChessMate
+#  ChessMate
 
 **ChessMate** is a Flutter-based Android chess game by **Pratik Poudel**. Play against the computer, play locally with a friend, or challenge another player online with room-based multiplayer and real-time chat.
 
