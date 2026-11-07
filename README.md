@@ -1,96 +1,89 @@
-#  ChessMate
+# ChessMate
 
-**ChessMate** is a Flutter-based Android chess game by **Pratik Poudel**. Play against the computer, play locally with a friend, or challenge another player online with room-based multiplayer and real-time chat.
+**ChessMate** is an Android chess application built with Flutter and Dart by **Pratik Poudel**. Play against an AI opponent, share one device for a local match, or challenge another player online with room-based multiplayer and real-time chat.
 
 [![Latest Release](https://img.shields.io/github/v/release/pyatrick666/ChessMate?label=latest%20release)](https://github.com/pyatrick666/ChessMate/releases/latest)
 [![Build APK](https://github.com/pyatrick666/ChessMate/actions/workflows/build-apk.yml/badge.svg)](https://github.com/pyatrick666/ChessMate/actions/workflows/build-apk.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.47.3-02569B?logo=flutter&logoColor=white)](https://flutter.dev/)
 
-## 🎮 Game Modes
+> Screenshots and gameplay images will be added in a later update.
 
-- **Player vs AI** — choose Easy, Medium, or Hard difficulty and practice against the computer.
-- **Local 2-player** — share one device for a face-to-face match.
-- **Online multiplayer** — create a room or join a room code to play with another person over the internet.
+## Overview
 
-## ✨ Features
+ChessMate brings several ways to play chess into one mobile application. The Flutter client integrates a chess engine for AI play and communicates with a separate Node.js WebSocket service for online matches. The project explores chess logic, game-state synchronisation, mobile interface design, and automated Android builds.
 
-### ♟️ Chess gameplay
+## Features
+
+### Game modes
+- **Player vs AI:** Easy, Medium, or Hard difficulty.
+- **Local 2-player:** play a shared-device match.
+- **Online multiplayer:** create a room or join with a room code.
+
+### Chess gameplay
 - Legal move handling and move indicators
 - Checkmate, stalemate, and draw detection
-- Game clocks and time-out results
+- Game clocks and timeout results
 - Resignation, draw offers, and rematches
-- Board orientation options
-- Win, loss, and draw result dialogs
+- Board orientation options and match result dialogs
 
-### 🌐 Online play
+### Online play and chat
 - Room creation and room-code joining
-- Server-authoritative move validation with `chess.js`
+- Server-authoritative move validation using `chess.js`
 - Real-time game-state synchronisation over WebSockets
-- Opponent connection status and automatic reconnection support
-- Resign, offer/accept draw, and rematch flow
+- Opponent connection status and reconnection support
+- Room-based live chat with quick messages, timestamps, and unread counts
+- Server-side message validation, room-scoped delivery, and rate limiting
 
-### 💬 Live match chat
-- Collapsible slide-up chat panel designed for mobile screens
-- Real-time text messages between the two players in a room
-- One-tap quick messages: **Good luck!**, **Well played!**, **Nice move!**, **Good game!**, and **Thanks!**
-- Message timestamps and unread-message count
-- Messages limited to 280 characters
-- Server-side message validation, room-only delivery, and rate limiting
-- Chat history limited to the current match and cleared when a rematch starts
-
-### 🎨 App experience
-- Responsive Flutter interface
-- Theme support
+### App experience
+- Responsive Flutter interface and theme support
 - Online lobby and connection status feedback
-- Support Developer options
-- Google AdMob integration, including banner, interstitial, and app-open ad components
-- Consent and privacy options for advertising
+- Google AdMob integration and consent/privacy options
 
-## 🧰 Tech Stack
+## Technology
 
-| Technology | Role |
-|---|---|
+| Technology | Purpose |
+| --- | --- |
 | Flutter / Dart | Android app and UI |
 | Stockfish | Chess engine integration |
 | Provider | Flutter state management |
-| `chess` | Client-side chess rules and move handling |
-| Node.js | Online multiplayer server |
-| `ws` (WebSocket) | Real-time game and chat communication |
+| `chess` | Client-side chess rules |
+| Node.js | Multiplayer server |
+| `ws` (WebSocket) | Real-time match and chat |
 | `chess.js` | Server-side chess rules and move validation |
 | Google Mobile Ads | In-app advertising |
 | Render | Multiplayer server hosting |
-| GitHub Actions | Automated analysis, tests, APK builds, and releases |
+| GitHub Actions | Automated checks, APK builds, and releases |
 
-## 🏗️ Architecture
+## Architecture
 
 ```text
-ChessMate Android App (Flutter)
-  ├── Vs AI ─────────────── Stockfish
+Flutter Android App
+  ├── Player vs AI ─────── Stockfish
   ├── Local 2-player
   └── Online multiplayer
            │ WebSocket
            ▼
-     Node.js server
-       ├── Room management
-       ├── Authoritative chess state (chess.js)
-       ├── Move validation and synchronisation
-       ├── Reconnection handling
-       └── Room-scoped live chat
+       Node.js server
+         ├── Room management
+         ├── Authoritative chess state (chess.js)
+         ├── Move validation and synchronisation
+         ├── Reconnection handling
+         └── Room-scoped live chat
 ```
 
-The multiplayer backend is in the `server/` directory. The server keeps active rooms and their chat history in memory; chat is not intended as a persistent messaging service.
+The backend lives in `server/`. Active rooms and chat history are held in server memory; chat is intended for the current match, not as a persistent messaging service.
 
-## 📥 Download
+## Download
 
-Download the latest Android APK from **[GitHub Releases](https://github.com/pyatrick666/ChessMate/releases/latest)**.
+Download the latest Android build from **[GitHub Releases](https://github.com/pyatrick666/ChessMate/releases/latest)**.
 
-- Android APK: `app-release.apk`
-- Current release build targets **ARM64 Android devices**.
-- The APK includes the native Stockfish library and can therefore be relatively large.
+- Release asset: `app-release.apk`
+- Current release build targets ARM64 Android devices.
+- The APK includes the native Stockfish library and may be relatively large.
 
-> Install APK files only from a source you trust. Android may ask you to allow installation from your chosen browser or file manager.
+Only install APK files from sources you trust.
 
-## 🚀 Run the Flutter App Locally
+## Run locally
 
 ### Requirements
 - Flutter stable (project CI uses Flutter 3.47.3)
@@ -98,43 +91,28 @@ Download the latest Android APK from **[GitHub Releases](https://github.com/pyat
 - Android SDK / Android Studio for Android builds
 - Git
 
-### Clone and install dependencies
-
+### Install and run
 ```bash
 git clone https://github.com/pyatrick666/ChessMate.git
 cd ChessMate
 flutter pub get
-```
-
-### Run on a connected device or emulator
-
-```bash
 flutter run
 ```
 
 ### Run checks
-
 ```bash
 flutter analyze
 flutter test
 ```
 
-### Build the ARM64 release APK
-
+### Build an ARM64 release APK
 ```bash
 flutter build apk --release --target-platform android-arm64
 ```
 
-The Android Gradle configuration excludes non-ARM64 Stockfish native libraries from the release APK to reduce its size.
-
-## 🌐 Run the Multiplayer Server Locally
+## Multiplayer server
 
 The server is a separate Node.js application in `server/`.
-
-### Requirements
-- Node.js and npm
-
-### Install and start
 
 ```bash
 cd server
@@ -142,23 +120,15 @@ npm install
 npm start
 ```
 
-The server listens on the port configured by the `PORT` environment variable (default: `8080`). Its health endpoint is:
+The server uses the `PORT` environment variable and defaults to `8080`. Its health endpoint is `http://localhost:8080/health`. For local multiplayer testing, configure the mobile app to use the WebSocket URL of the server you want to test. The production multiplayer service is hosted on Render; free hosting may take time to wake after inactivity.
 
-```text
-http://localhost:8080/health
-```
-
-The mobile app must be configured to use the WebSocket URL for the server you want to test. The production multiplayer service is hosted on Render; free hosting may take time to wake after inactivity.
-
-
-
-## 🗂️ Project Structure
+## Project structure
 
 ```text
 ChessMate/
 ├── android/                  # Android platform and build configuration
 ├── lib/
-│   ├── models/                # Game models and settings
+│   ├── models/               # Game models and settings
 │   ├── providers/             # App and game state
 │   ├── screens/               # Home, lobby, and game screens
 │   ├── services/              # Online services and networking
@@ -166,27 +136,23 @@ ChessMate/
 │   └── widgets/               # Chessboards, pieces, ads, and UI widgets
 ├── server/                    # Node.js WebSocket multiplayer server
 ├── test/                      # Flutter tests
-├── .github/workflows/         # CI and APK release workflow
-├── pubspec.yaml               # Flutter dependencies and app metadata
-└── README.md
+└── .github/workflows/         # CI and APK release workflow
 ```
 
-## 🧭 Roadmap
+## Roadmap
 
-Ideas for future development include:
 - [ ] Player accounts and profiles
 - [ ] Matchmaking and player ratings
-- [ ] Friends and game history
-- [ ] Additional board and piece customisation
+- [ ] Friends list and match history
+- [ ] More board and piece customisation
 - [ ] Expanded multiplayer and chat testing
 
-## 👨‍💻 Developer
+## Developer
 
-**Pratik Poudel**
+**Pratik Poudel** · [GitHub](https://github.com/pyatrick666) · [Portfolio](https://pyatrick666.github.io/Professional-Portfolio/) · [Email](mailto:pyatrick666@gmail.com)
 
-- GitHub: [@pyatrick666](https://github.com/pyatrick666)
+<div align="center">
 
+**Play. Practice. Compete.**
 
-## ♟️ Play. Practice. Compete.
-
-Built with Flutter and Dart.
+</div>
