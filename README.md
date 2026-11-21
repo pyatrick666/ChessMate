@@ -149,7 +149,7 @@ ChessMate/
 
 ## Developer
 
-**Pratik Poudel** · [GitHub](https://github.com/pyatrick666) · [Portfolio](https://pyatrick666.github.io/Professional-Portfolio/) · [Email](mailto:pyatrick666@gmail.com)
+**Pratik Poudel** · [GitHub](https://github.com/pyatrick666) · [Portfolio](https://pratikpoudel.info.np/) · [Email](mailto:pyatrick666@gmail.com)
 
 <div align="center">
 
