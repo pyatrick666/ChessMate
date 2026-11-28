@@ -12,9 +12,9 @@
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=githubactions)](https://github.com/features/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Live Web App](https://chessmate.pratikpoudel.info.np) · [Download APK](<link>) · [Case Study](https://pratikpoudel.info.np/projects/chessmate) · [Demo Video](<Loom link>)
+ [Download APK](<link>) · [Case Study](https://pratikpoudel.info.np/projects/chessmate) ·
 
-![ChessMate banner](docs/banner.png)
+
 
 </div>
 
