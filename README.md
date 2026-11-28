@@ -228,8 +228,8 @@ MIT © <Year> Pratik Poudel
 
 <div align="center">
 
-**Built with ❤️ by [Pratik Poudel](https://pratikpoudel.info.np)**
+**Built by [Pratik Poudel](https://pratikpoudel.info.np)**
 
-[Portfolio](https://pratikpoudel.info.np) · [LinkedIn](https://www.linkedin.com/in/pratik-poudel-dev/) · [GitHub](https://github.com/<your-username>)
+[Portfolio](https://pratikpoudel.info.np) · [LinkedIn](https://www.linkedin.com/in/pratik-poudel-dev/) ·
 
 </div>
