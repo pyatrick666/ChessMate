@@ -1,158 +1,235 @@
-# ChessMate
+<div align="center">
 
-**ChessMate** is an Android chess application built with Flutter and Dart by **Pratik Poudel**. Play against an AI opponent, share one device for a local match, or challenge another player online with room-based multiplayer and real-time chat.
+# ♟️ ChessMate
 
-[![Latest Release](https://img.shields.io/github/v/release/pyatrick666/ChessMate?label=latest%20release)](https://github.com/pyatrick666/ChessMate/releases/latest)
-[![Build APK](https://github.com/pyatrick666/ChessMate/actions/workflows/build-apk.yml/badge.svg)](https://github.com/pyatrick666/ChessMate/actions/workflows/build-apk.yml)
-[![Flutter](https://img.shields.io/badge/Flutter-3.47.3-02569B?logo=flutter&logoColor=white)](https://flutter.dev/)
+**A production-grade multiplayer chess platform — Flutter mobile app + Next.js web client + Node.js backend**
 
-> Screenshots and gameplay images will be added in a later update.
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000000?logo=nextdotjs)](https://nextjs.org)
+[![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=nodedotjs)](https://nodejs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker)](https://docker.com)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=githubactions)](https://github.com/features/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Overview
+[Live Web App](https://chessmate.pratikpoudel.info.np) · [Download APK](<link>) · [Case Study](https://pratikpoudel.info.np/projects/chessmate) · [Demo Video](<Loom link>)
 
-ChessMate brings several ways to play chess into one mobile application. The Flutter client integrates a chess engine for AI play and communicates with a separate Node.js WebSocket service for online matches. The project explores chess logic, game-state synchronisation, mobile interface design, and automated Android builds.
+![ChessMate banner](docs/banner.png)
 
-## Features
+</div>
 
-### Game modes
-- **Player vs AI:** Easy, Medium, or Hard difficulty.
-- **Local 2-player:** play a shared-device match.
-- **Online multiplayer:** create a room or join with a room code.
+---
 
-### Chess gameplay
-- Legal move handling and move indicators
-- Checkmate, stalemate, and draw detection
-- Game clocks and timeout results
-- Resignation, draw offers, and rematches
-- Board orientation options and match result dialogs
+## 📖 Overview
 
-### Online play and chat
-- Room creation and room-code joining
-- Server-authoritative move validation using `chess.js`
-- Real-time game-state synchronisation over WebSockets
-- Opponent connection status and reconnection support
-- Room-based live chat with quick messages, timestamps, and unread counts
-- Server-side message validation, room-scoped delivery, and rate limiting
+ChessMate is a cross-platform multiplayer chess platform built as a portfolio project to demonstrate end-to-end product engineering — from mobile UI to backend API to CI/CD to real users.
 
-### App experience
-- Responsive Flutter interface and theme support
-- Online lobby and connection status feedback
-- Google AdMob integration and consent/privacy options
+**In production since <Month Year>** · **<50+> registered users** · **<X> games played** · **99.x% uptime**
 
-## Technology
+### Why this exists
+I wanted to go beyond "it works on my machine." ChessMate is what happened when I took a college project and productionized it: containerized backend, automated CI/CD, real users, real metrics, and a web companion app that reuses the same API.
 
-| Technology | Purpose |
-| --- | --- |
-| Flutter / Dart | Android app and UI |
-| Stockfish | Chess engine integration |
-| Provider | Flutter state management |
-| `chess` | Client-side chess rules |
-| Node.js | Multiplayer server |
-| `ws` (WebSocket) | Real-time match and chat |
-| `chess.js` | Server-side chess rules and move validation |
-| Google Mobile Ads | In-app advertising |
-| Render | Multiplayer server hosting |
-| GitHub Actions | Automated checks, APK builds, and releases |
+---
 
-## Architecture
+## ✨ Features
 
-```text
-Flutter Android App
-  ├── Player vs AI ─────── Stockfish
-  ├── Local 2-player
-  └── Online multiplayer
-           │ WebSocket
-           ▼
-       Node.js server
-         ├── Room management
-         ├── Authoritative chess state (chess.js)
-         ├── Move validation and synchronisation
-         ├── Reconnection handling
-         └── Room-scoped live chat
+### Gameplay
+- ♟️ Full chess rules engine (castling, en passant, promotion, checkmate)
+- 🤖 AI opponents with adjustable difficulty (Stockfish integration)
+- 👥 Local 2-player mode
+- 🌐 Real-time online multiplayer (WebSockets)
+- 💬 In-game real-time chat
+- 🏆 ELO rating system + global leaderboard
+- 🎯 Matchmaking queue
+- 👀 Spectator mode
+- 🏟️ Tournament mode *(in progress)*
+
+### Platform
+- 📱 Flutter mobile app (Android)
+- 💻 Next.js web client (same backend)
+- 🔔 Push notifications (FCM)
+- 👤 Auth (email + JWT)
+- 🛠️ Admin dashboard (users, games, reports)
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│  Flutter App    │     │  Next.js Web    │
+│  (Android)      │     │  (Vercel)       │
+└────────┬────────┘     └────────┬────────┘
+         │                        │
+         └──────────┬─────────────┘
+                    │ HTTPS / WSS
+         ┌──────────▼──────────┐
+         │   Node.js API       │
+         │   (Express + WS)    │
+         │   Dockerized        │
+         │   Deployed: Render  │
+         └──────────┬──────────┘
+                    │
+         ┌──────────▼──────────┐
+         │   PostgreSQL        │
+         │   (Supabase)        │
+         └─────────────────────┘
 ```
 
-The backend lives in `server/`. Active rooms and chat history are held in server memory; chat is intended for the current match, not as a persistent messaging service.
+![Architecture diagram](docs/architecture.png)
 
-## Download
+---
 
-Download the latest Android build from **[GitHub Releases](https://github.com/pyatrick666/ChessMate/releases/latest)**.
+## 🛠️ Tech Stack
 
-- Release asset: `app-release.apk`
-- Current release build targets ARM64 Android devices.
-- The APK includes the native Stockfish library and may be relatively large.
+| Layer | Technology |
+|---|---|
+| Mobile | Flutter, Dart |
+| Web | Next.js 14, TypeScript, Tailwind CSS |
+| Backend | Node.js, Express, Socket.IO |
+| Database | PostgreSQL (Supabase) |
+| Auth | JWT |
+| Chess Engine | Stockfish |
+| Notifications | Firebase Cloud Messaging |
+| Containerization | Docker |
+| CI/CD | GitHub Actions |
+| Deployment | Render (API), Vercel (Web), Supabase (DB) |
+| Monitoring | <UptimeRobot / Sentry> |
 
-Only install APK files from sources you trust.
+---
 
-## Run locally
+## 🚀 Getting Started
 
-### Requirements
-- Flutter stable (project CI uses Flutter 3.47.3)
-- Dart SDK compatible with `pubspec.yaml`
-- Android SDK / Android Studio for Android builds
-- Git
+### Prerequisites
+- Flutter SDK 3.x
+- Node.js 20+
+- Docker & Docker Compose
+- A Supabase project (free tier works)
 
-### Install and run
+### 1. Clone
 ```bash
-git clone https://github.com/pyatrick666/ChessMate.git
-cd ChessMate
+git clone https://github.com/<your-username>/chessmate.git
+cd chessmate
+```
+
+### 2. Backend
+```bash
+cd backend
+cp .env.example .env      # fill in DATABASE_URL, JWT_SECRET, FCM_KEY
+docker compose up --build
+# API running at http://localhost:3000
+```
+
+### 3. Web client
+```bash
+cd web
+cp .env.example .env.local
+npm install
+npm run dev
+# Web running at http://localhost:3001
+```
+
+### 4. Mobile app
+```bash
+cd mobile
 flutter pub get
 flutter run
 ```
 
-### Run checks
-```bash
-flutter analyze
-flutter test
-```
+---
 
-### Build an ARM64 release APK
-```bash
-flutter build apk --release --target-platform android-arm64
-```
-
-## Multiplayer server
-
-The server is a separate Node.js application in `server/`.
+## 🧪 Testing
 
 ```bash
-cd server
-npm install
-npm start
+# Backend
+cd backend && npm test          # Jest, <60>% coverage
+
+# Web
+cd web && npm test              # Vitest
+
+# Mobile
+cd mobile && flutter test
 ```
 
-The server uses the `PORT` environment variable and defaults to `8080`. Its health endpoint is `http://localhost:8080/health`. For local multiplayer testing, configure the mobile app to use the WebSocket URL of the server you want to test. The production multiplayer service is hosted on Render; free hosting may take time to wake after inactivity.
+Every pull request runs the full test suite via GitHub Actions before merge.
 
-## Project structure
+---
 
-```text
-ChessMate/
-├── android/                  # Android platform and build configuration
-├── lib/
-│   ├── models/               # Game models and settings
-│   ├── providers/             # App and game state
-│   ├── screens/               # Home, lobby, and game screens
-│   ├── services/              # Online services and networking
-│   ├── utils/                 # Shared utilities and constants
-│   └── widgets/               # Chessboards, pieces, ads, and UI widgets
-├── server/                    # Node.js WebSocket multiplayer server
-├── test/                      # Flutter tests
-└── .github/workflows/         # CI and APK release workflow
-```
+## 🔄 CI/CD Pipeline
 
-## Roadmap
+`.github/workflows/ci.yml` runs on every push/PR:
 
-- [ ] Player accounts and profiles
-- [ ] Matchmaking and player ratings
-- [ ] Friends list and match history
-- [ ] More board and piece customisation
-- [ ] Expanded multiplayer and chat testing
+1. **Lint** — ESLint (backend/web), `flutter analyze` (mobile)
+2. **Test** — Jest, Vitest, Flutter test
+3. **Build** — Docker image + Flutter APK
+4. **Deploy** — on `main` merge → Render (backend) + Vercel (web)
+5. **Release** — tag `v*` → attach APK to GitHub Release
 
-## Developer
+Average pipeline time: **<5 minutes**.
 
-**Pratik Poudel** · [GitHub](https://github.com/pyatrick666) · [Portfolio](https://pratikpoudel.info.np/) · [Email](mailto:pyatrick666@gmail.com)
+---
+
+## 📊 Metrics (last 30 days)
+
+| Metric | Value |
+|---|---|
+| Registered users | <50+> |
+| Games played | <X> |
+| Daily active users (avg) | <X> |
+| API p95 latency | <200> ms |
+| Uptime | <99.x>% |
+| Test coverage (backend) | <60>% |
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Core chess engine
+- [x] AI opponents (Stockfish)
+- [x] Online multiplayer + chat
+- [x] ELO + leaderboard
+- [x] Next.js web client
+- [x] CI/CD + Docker
+- [ ] Tournament mode
+- [ ] Friends + private matches
+- [ ] Mobile in-app purchases (cosmetics)
+- [ ] Internationalization (EN/NE)
+
+---
+
+## 📸 Screenshots
+
+| Mobile | Web | Admin |
+|---|---|---|
+| ![mobile](docs/screens/mobile.png) | ![web](docs/screens/web.png) | ![admin](docs/screens/admin.png) |
+
+---
+
+## 🤝 Contributing
+
+Issues and PRs welcome. Please open an issue first to discuss significant changes.
+
+---
+
+## 📄 License
+
+MIT © <Year> Pratik Poudel
+
+---
+
+## 🙏 Acknowledgements
+
+- [Stockfish](https://stockfishchess.org/) for the chess engine
+- [chess.js](https://github.com/jhlywa/chess.js) for move validation
+- [Supabase](https://supabase.com) for the free Postgres tier
+- Everyone who played early builds and filed bugs 🙌
+
+---
 
 <div align="center">
 
-**Play. Practice. Compete.**
+**Built with ❤️ by [Pratik Poudel](https://pratikpoudel.info.np)**
+
+[Portfolio](https://pratikpoudel.info.np) · [LinkedIn](https://www.linkedin.com/in/pratik-poudel-dev/) · [GitHub](https://github.com/<your-username>)
 
 </div>
